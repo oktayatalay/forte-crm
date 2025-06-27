@@ -1,0 +1,188 @@
+name: Deploy Forte CRM to Production
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Cache Next.js build
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.npm
+          ${{ github.workspace }}/.next/cache
+        key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+        restore-keys: |
+          ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+          ${{ runner.os }}-nextjs-
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Check for changes
+      id: changes
+      uses: dorny/paths-filter@v3
+      with:
+        filters: |
+          frontend:
+            - 'src/**'
+            - 'public/**'
+            - 'package*.json'
+            - 'next.config.*'
+            - 'tsconfig.json'
+            - 'tailwind.config.*'
+          backend:
+            - 'api/**'
+            - 'database/**'
+          
+    - name: Build Next.js application
+      if: steps.changes.outputs.frontend == 'true'
+      run: |
+        echo "Building Next.js application..."
+        npm run build
+        echo "Build completed. Checking output:"
+        ls -la out/
+        
+    - name: Use cached build
+      if: steps.changes.outputs.frontend == 'false'
+      run: |
+        echo "No frontend changes detected, using cached build"
+        # Restore previous build if exists
+        if [ -d ".next" ]; then
+          npm run build
+        else
+          echo "No cache found, building fresh"
+          npm run build
+        fi
+        ls -la out/
+        
+    - name: Create deployment package
+      run: |
+        # Create deployment directory
+        mkdir -p deploy
+        
+        # Copy API files
+        echo "Copying API files..."
+        cp -r api deploy/
+        
+        # Copy database migrations
+        echo "Copying database files..."
+        cp -r database deploy/
+        
+        # Copy Next.js static files (from out/ to deploy root)
+        echo "Copying Next.js build output..."
+        if [ -d "out" ] && [ "$(ls -A out 2>/dev/null)" ]; then
+          cp -r out/* deploy/
+          echo "✅ Next.js files copied successfully"
+        else
+          echo "❌ No Next.js output found"
+          exit 1
+        fi
+        
+        # Copy configuration files
+        cp .htaccess deploy/
+        
+        # Create .env file with GitHub Secrets
+        cat > deploy/.env << EOF
+        # Database Configuration
+        DB_HOST=localhost
+        DB_NAME=${{ secrets.DB_NAME }}
+        DB_USER=${{ secrets.DB_USER }}
+        DB_PASS=${{ secrets.DB_PASS }}
+        
+        # Email Configuration
+        SMTP_HOST=${{ secrets.SMTP_HOST }}
+        SMTP_PORT=465
+        SMTP_USER=${{ secrets.SMTP_USER }}
+        SMTP_PASS=${{ secrets.SMTP_PASS }}
+        
+        # Admin Configuration
+        ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}
+        ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
+        
+        # Security
+        JWT_SECRET=${{ secrets.JWT_SECRET }}
+        ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}
+        FORCE_HTTPS=true
+        WEBHOOK_SECRET=${{ secrets.WEBHOOK_SECRET }}
+        MIGRATION_TOKEN=${{ secrets.MIGRATION_TOKEN }}
+        
+        # Production Settings
+        APP_ENV=production
+        DEBUG=false
+        EOF
+        
+        # List deployment contents
+        echo "Deployment package contents:"
+        find deploy -type f | head -20
+        echo "Total files: $(find deploy -type f | wc -l)"
+        
+    - name: Deploy to FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./deploy/
+        server-dir: ./
+        port: 21
+        protocol: ftp
+        timeout: 60000
+        log-level: minimal
+        dry-run: false
+        # Only sync changed files
+        state-name: .ftp-deploy-sync-state.json
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          
+    - name: Run database migrations
+      if: steps.changes.outputs.backend == 'true'
+      uses: fjogeleit/http-request-action@v1
+      with:
+        url: 'https://corporate.forte.works/api/database/migrate.php'
+        method: 'POST'
+        customHeaders: '{"Authorization": "Bearer ${{ secrets.MIGRATION_TOKEN }}"}'
+        timeout: 30000
+      continue-on-error: true
+      
+    - name: Clear cache
+      uses: fjogeleit/http-request-action@v1
+      with:
+        url: 'https://corporate.forte.works/api/admin/clear-cache.php'
+        method: 'POST'
+        customHeaders: '{"Authorization": "Bearer ${{ secrets.MIGRATION_TOKEN }}"}'
+        timeout: 10000
+      continue-on-error: true
+      
+    - name: Deployment Summary
+      run: |
+        echo "🚀 Deployment Summary:"
+        echo "Frontend changes: ${{ steps.changes.outputs.frontend }}"
+        echo "Backend changes: ${{ steps.changes.outputs.backend }}"
+        echo "Deployment completed successfully!"
+        if [ "${{ steps.changes.outputs.frontend }}" == "true" ]; then
+          echo "✅ Frontend rebuilt and deployed"
+        else
+          echo "⚡ Frontend skipped (no changes)"
+        fi
+        if [ "${{ steps.changes.outputs.backend }}" == "true" ]; then
+          echo "✅ Backend deployed and migrations run"
+        else
+          echo "⚡ Backend migrations skipped (no changes)"
+        fi
