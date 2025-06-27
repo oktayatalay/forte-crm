@@ -37,6 +37,10 @@ export default function UserManagement() {
   const [showAddUser, setShowAddUser] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState<keyof User | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const [newUser, setNewUser] = useState({
     email: '',
@@ -211,12 +215,72 @@ export default function UserManagement() {
     }
   };
 
+  const downloadCSV = () => {
+    const headers = ['Adı Soyadı', 'E-posta', 'Şirket Telefonu', 'Şahsi Telefonu', 'Ofis', 'Departman', 'Title', 'Yaşadığı Şehir', 'Cinsiyet', 'Doğum Tarihi'];
+    const csvData = sortedUsers.map(user => [
+      user.name || '',
+      user.email,
+      user.mobile_phone_1 || '',
+      user.mobile_phone_2 || '',
+      user.offices ? user.offices.join('; ') : '',
+      user.department_name || '',
+      user.title || '',
+      user.city || '',
+      user.gender === 'male' ? 'Erkek' : user.gender === 'female' ? 'Kadın' : user.gender === 'other' ? 'Diğer' : '',
+      user.birth_date ? new Date(user.birth_date).toLocaleDateString('tr-TR') : ''
+    ]);
+
+    const csvContent = [headers, ...csvData]
+      .map(row => row.map(field => `"${field}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `kullanicilar_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleSort = (field: keyof User) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
   const filteredUsers = users.filter(user => 
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (user.title && user.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (user.department_name && user.department_name.toLowerCase().includes(searchTerm.toLowerCase()))
+    (user.department_name && user.department_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (user.city && user.city.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (user.mobile_phone_1 && user.mobile_phone_1.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (user.mobile_phone_2 && user.mobile_phone_2.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    if (!sortField) return 0;
+    
+    const aValue = a[sortField] || '';
+    const bValue = b[sortField] || '';
+    
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const paginatedUsers = sortedUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
 
   if (loading) {
     return (
@@ -250,7 +314,12 @@ export default function UserManagement() {
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <Button variant="outline" size="sm" className="text-gray-600">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-gray-600"
+                onClick={downloadCSV}
+              >
                 📥 Download
               </Button>
               <Button onClick={() => setShowAddUser(true)} className="bg-blue-600 hover:bg-blue-700">
@@ -475,20 +544,44 @@ export default function UserManagement() {
                   <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider w-8">
                     <input type="checkbox" className="rounded border-gray-300" />
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    NAME <span className="ml-1">▲</span>
+                  <th 
+                    className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                    onClick={() => handleSort('name')}
+                  >
+                    ADI SOYADI <span className="ml-1">{sortField === 'name' ? (sortDirection === 'asc' ? '▲' : '▼') : '▲'}</span>
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    EMAIL <span className="ml-1">▲</span>
+                  <th 
+                    className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                    onClick={() => handleSort('email')}
+                  >
+                    E-POSTA <span className="ml-1">{sortField === 'email' ? (sortDirection === 'asc' ? '▲' : '▼') : '▲'}</span>
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    LOCATION <span className="ml-1">▲</span>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700">
+                    TELEFON NUMARALARI <span className="ml-1">▲</span>
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    STATUS <span className="ml-1">▲</span>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700">
+                    OFİS <span className="ml-1">▲</span>
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    SPENT <span className="ml-1">▲</span>
+                  <th 
+                    className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                    onClick={() => handleSort('department_name')}
+                  >
+                    DEPARTMAN <span className="ml-1">{sortField === 'department_name' ? (sortDirection === 'asc' ? '▲' : '▼') : '▲'}</span>
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700">
+                    TITLE <span className="ml-1">▲</span>
+                  </th>
+                  <th 
+                    className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                    onClick={() => handleSort('city')}
+                  >
+                    YAŞADIĞI ŞEHİR <span className="ml-1">{sortField === 'city' ? (sortDirection === 'asc' ? '▲' : '▼') : '▲'}</span>
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700">
+                    CİNSİYET <span className="ml-1">▲</span>
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700">
+                    DOĞUM TARİHİ <span className="ml-1">▲</span>
                   </th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
                     
@@ -496,7 +589,7 @@ export default function UserManagement() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredUsers.map((user) => (
+                {paginatedUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-4">
                       <input type="checkbox" className="rounded border-gray-300" />
@@ -508,13 +601,8 @@ export default function UserManagement() {
                             {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
                           </span>
                         </div>
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {user.name || 'Unnamed User'}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {user.title || 'No title'}
-                          </div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {user.name || 'Unnamed User'}
                         </div>
                       </div>
                     </td>
@@ -525,22 +613,61 @@ export default function UserManagement() {
                     </td>
                     <td className="px-4 py-4">
                       <div className="text-sm text-gray-900">
-                        {user.city || 'Unknown'}
-                        {user.department_name && (
-                          <div className="text-xs text-gray-500">{user.department_name}</div>
+                        {user.mobile_phone_1 && (
+                          <div className="mb-1">
+                            <span className="text-xs text-gray-500">Şirket:</span> {user.mobile_phone_1}
+                          </div>
                         )}
+                        {user.mobile_phone_2 && (
+                          <div>
+                            <span className="text-xs text-gray-500">Şahsi:</span> {user.mobile_phone_2}
+                          </div>
+                        )}
+                        {!user.mobile_phone_1 && !user.mobile_phone_2 && '-'}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="text-sm text-gray-900">
+                        {user.offices && user.offices.length > 0 
+                          ? user.offices.join(', ') 
+                          : '-'
+                        }
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      {user.department_name ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {user.department_name}
+                        </span>
+                      ) : (
+                        <span className="text-gray-500">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="text-sm text-gray-900">
+                        {user.title || '-'}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="text-sm text-gray-900">
+                        {user.city || '-'}
                       </div>
                     </td>
                     <td className="px-4 py-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        user.mobile_phone_1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        user.gender === 'male' ? 'bg-blue-100 text-blue-800' : 
+                        user.gender === 'female' ? 'bg-pink-100 text-pink-800' : 
+                        user.gender === 'other' ? 'bg-purple-100 text-purple-800' : 
+                        'bg-gray-100 text-gray-600'
                       }`}>
-                        {user.mobile_phone_1 ? 'Active' : 'Blocked'}
+                        {user.gender === 'male' ? '👨 Erkek' : 
+                         user.gender === 'female' ? '👩 Kadın' : 
+                         user.gender === 'other' ? '⚧ Diğer' : '-'}
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        ${Math.floor(Math.random() * 9000 + 1000)}.{Math.floor(Math.random() * 99)}
+                      <div className="text-sm text-gray-900">
+                        {user.birth_date ? new Date(user.birth_date).toLocaleDateString('tr-TR') : '-'}
                       </div>
                     </td>
                     <td className="px-4 py-4 text-right">
@@ -573,28 +700,65 @@ export default function UserManagement() {
         {/* Pagination */}
         <div className="mt-6 flex items-center justify-between">
           <div className="text-sm text-gray-700">
-            Showing <span className="font-medium">1</span> to <span className="font-medium">{Math.min(10, filteredUsers.length)}</span> of <span className="font-medium">{filteredUsers.length}</span> results
+            Showing <span className="font-medium">{((currentPage - 1) * itemsPerPage) + 1}</span> to <span className="font-medium">{Math.min(currentPage * itemsPerPage, sortedUsers.length)}</span> of <span className="font-medium">{sortedUsers.length}</span> results
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" disabled className="text-gray-400">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              disabled={currentPage === 1} 
+              className={currentPage === 1 ? "text-gray-400" : ""}
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            >
               ←
             </Button>
-            <Button variant="outline" size="sm" className="bg-blue-600 text-white border-blue-600">
-              1
-            </Button>
-            <Button variant="outline" size="sm">
-              2
-            </Button>
-            <Button variant="outline" size="sm">
-              3
-            </Button>
-            <Button variant="outline" size="sm">
+            
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+              
+              return (
+                <Button 
+                  key={pageNum}
+                  variant="outline" 
+                  size="sm" 
+                  className={currentPage === pageNum ? "bg-blue-600 text-white border-blue-600" : ""}
+                  onClick={() => setCurrentPage(pageNum)}
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              disabled={currentPage === totalPages}
+              className={currentPage === totalPages ? "text-gray-400" : ""}
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            >
               →
             </Button>
-            <select className="ml-4 text-sm border border-gray-300 rounded px-2 py-1">
-              <option>10 / page</option>
-              <option>25 / page</option>
-              <option>50 / page</option>
+            
+            <select 
+              className="ml-4 text-sm border border-gray-300 rounded px-2 py-1"
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(parseInt(e.target.value));
+                setCurrentPage(1);
+              }}
+            >
+              <option value={10}>10 / page</option>
+              <option value={25}>25 / page</option>
+              <option value={50}>50 / page</option>
             </select>
           </div>
         </div>
