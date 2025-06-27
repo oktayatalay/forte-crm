@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+// Card components removed - using native divs for modern design
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -557,8 +557,9 @@ export default function UserManagement() {
                           size="sm" 
                           variant="ghost"
                           className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600"
+                          onClick={() => handleDeleteUser(user.id)}
                         >
-                          👁️
+                          🗑️
                         </Button>
                       </div>
                     </td>
