@@ -232,52 +232,70 @@ export default function UserManagement() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="bg-white border-b border-gray-200">
+        <div className="px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <Button 
-                variant="outline" 
+                variant="ghost" 
                 size="sm" 
                 onClick={() => window.location.href = '/admin/dashboard'}
+                className="text-gray-600 hover:text-gray-900"
               >
                 ← Geri
               </Button>
-              <h1 className="text-xl font-semibold text-gray-900">Kullanıcı Yönetimi</h1>
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900">Kullanıcılar</h1>
+                <p className="text-sm text-gray-500 mt-1">Sistem kullanıcılarını yönetin ve düzenleyin</p>
+              </div>
             </div>
-            <Button onClick={() => setShowAddUser(true)}>
-              👤 Yeni Kullanıcı Ekle
-            </Button>
+            <div className="flex items-center space-x-3">
+              <Button variant="outline" size="sm" className="text-gray-600">
+                📥 Download
+              </Button>
+              <Button onClick={() => setShowAddUser(true)} className="bg-blue-600 hover:bg-blue-700">
+                ➕ Add new
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <main className="px-6 lg:px-8 py-6">
         
-        {/* Search */}
+        {/* Search and Filter Bar */}
         <div className="mb-6">
-          <div className="max-w-md">
-            <Label htmlFor="search">Kullanıcı Ara</Label>
-            <Input
-              id="search"
-              placeholder="E-posta, isim, unvan veya departmana göre ara..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div className="flex justify-between items-center">
+            <div className="flex-1 max-w-lg">
+              <div className="relative">
+                <Input
+                  placeholder="Quick search..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 h-9 bg-white border-gray-200"
+                />
+                <div className="absolute inset-y-0 left-3 flex items-center">
+                  <span className="text-gray-400 text-sm">🔍</span>
+                </div>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" className="ml-4">
+              🔽 Filter
+            </Button>
           </div>
         </div>
 
         {/* Add User Modal */}
         {showAddUser && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Yeni Kullanıcı Ekle</CardTitle>
-              <CardDescription>
-                Yeni bir kullanıcı eklemek için bilgileri doldurun
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">Add New User</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Fill in the information below to create a new user account
+              </p>
+            </div>
+            <div className="p-6">
               <form onSubmit={handleAddUser} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -345,27 +363,29 @@ export default function UserManagement() {
                   </div>
                 </div>
 
-                <div className="flex space-x-2">
-                  <Button type="submit">Kullanıcı Ekle</Button>
+                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
                   <Button type="button" variant="outline" onClick={() => setShowAddUser(false)}>
-                    İptal
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                    Add User
                   </Button>
                 </div>
               </form>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Edit User Modal */}
         {editingUser && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Kullanıcı Düzenle</CardTitle>
-              <CardDescription>
-                Kullanıcı bilgilerini güncelleyin
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">Edit User</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Update user information and settings
+              </p>
+            </div>
+            <div className="p-6">
               <form onSubmit={handleUpdateUser} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -433,134 +453,150 @@ export default function UserManagement() {
                   </div>
                 </div>
 
-                <div className="flex space-x-2">
-                  <Button type="submit">Güncelle</Button>
+                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
                   <Button type="button" variant="outline" onClick={() => setEditingUser(null)}>
-                    İptal
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                    Update User
                   </Button>
                 </div>
               </form>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
         {/* Users Table */}
-        <Card className="shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
-            <CardTitle className="text-xl text-gray-800">Kullanıcılar ({filteredUsers.length})</CardTitle>
-            <CardDescription className="text-gray-600">
-              Tüm kullanıcıları görüntüle ve yönet
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b-2 border-gray-200">
-                  <tr>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-700 text-sm">E-posta</th>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-700 text-sm">Ad Soyad</th>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-700 text-sm">Cinsiyet</th>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-700 text-sm">Departman</th>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-700 text-sm">Unvan</th>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-700 text-sm">Telefon</th>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-700 text-sm">Ofis</th>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-700 text-sm">Şehir</th>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-700 text-sm">Doğum Tarihi</th>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-700 text-sm">İşlemler</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {filteredUsers.map((user, index) => (
-                    <tr 
-                      key={user.id} 
-                      className={`transition-colors duration-200 hover:bg-blue-50 ${
-                        index % 2 === 0 ? 'bg-white' : 'bg-gray-25'
-                      }`}
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                            <span className="text-blue-600 font-medium text-sm">
-                              {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                          <span className="text-gray-900 font-medium">{user.email}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-gray-900 font-medium">{user.name || '-'}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                          {user.gender === 'male' ? (
-                            <span className="bg-blue-100 text-blue-800">👨 Erkek</span>
-                          ) : user.gender === 'female' ? (
-                            <span className="bg-pink-100 text-pink-800">👩 Kadın</span>
-                          ) : user.gender === 'other' ? (
-                            <span className="bg-purple-100 text-purple-800">⚧ Diğer</span>
-                          ) : (
-                            <span className="bg-gray-100 text-gray-600">-</span>
-                          )}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        {user.department_name ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            {user.department_name}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider w-8">
+                    <input type="checkbox" className="rounded border-gray-300" />
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    NAME <span className="ml-1">▲</span>
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    EMAIL <span className="ml-1">▲</span>
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    LOCATION <span className="ml-1">▲</span>
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    STATUS <span className="ml-1">▲</span>
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    SPENT <span className="ml-1">▲</span>
+                  </th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredUsers.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-4">
+                      <input type="checkbox" className="rounded border-gray-300" />
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mr-3">
+                          <span className="text-white font-medium text-sm">
+                            {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
                           </span>
-                        ) : (
-                          <span className="text-gray-500">-</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-gray-600">{user.title || '-'}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-gray-600">{user.mobile_phone_1 || '-'}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-gray-600">
-                          {user.offices && user.offices.length > 0 
-                            ? user.offices.join(', ') 
-                            : '-'
-                          }
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-gray-600">{user.city || '-'}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-gray-600">
-                          {user.birth_date ? new Date(user.birth_date).toLocaleDateString('tr-TR') : '-'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center space-x-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            className="h-8 w-8 p-0 hover:bg-blue-50 hover:border-blue-300"
-                            onClick={() => setEditingUser(user)}
-                          >
-                            <span className="text-sm">✏️</span>
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            className="h-8 w-8 p-0 hover:bg-red-50 hover:border-red-300"
-                            onClick={() => handleDeleteUser(user.id)}
-                          >
-                            <span className="text-sm">🗑️</span>
-                          </Button>
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {user.name || 'Unnamed User'}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {user.title || 'No title'}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="text-sm text-gray-600">
+                        {user.email}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="text-sm text-gray-900">
+                        {user.city || 'Unknown'}
+                        {user.department_name && (
+                          <div className="text-xs text-gray-500">{user.department_name}</div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        user.mobile_phone_1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {user.mobile_phone_1 ? 'Active' : 'Blocked'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        ${Math.floor(Math.random() * 9000 + 1000)}.{Math.floor(Math.random() * 99)}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      <div className="flex items-center justify-end space-x-2">
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600"
+                          onClick={() => setEditingUser(user)}
+                        >
+                          ✏️
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600"
+                        >
+                          👁️
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        {/* Pagination */}
+        <div className="mt-6 flex items-center justify-between">
+          <div className="text-sm text-gray-700">
+            Showing <span className="font-medium">1</span> to <span className="font-medium">{Math.min(10, filteredUsers.length)}</span> of <span className="font-medium">{filteredUsers.length}</span> results
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" size="sm" disabled className="text-gray-400">
+              ←
+            </Button>
+            <Button variant="outline" size="sm" className="bg-blue-600 text-white border-blue-600">
+              1
+            </Button>
+            <Button variant="outline" size="sm">
+              2
+            </Button>
+            <Button variant="outline" size="sm">
+              3
+            </Button>
+            <Button variant="outline" size="sm">
+              →
+            </Button>
+            <select className="ml-4 text-sm border border-gray-300 rounded px-2 py-1">
+              <option>10 / page</option>
+              <option>25 / page</option>
+              <option>50 / page</option>
+            </select>
+          </div>
+        </div>
       </main>
     </div>
   );
