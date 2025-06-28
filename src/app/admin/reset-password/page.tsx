@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -119,13 +117,13 @@ function ResetPasswordContent() {
   if (!validToken) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="max-w-md w-full">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-red-600">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 max-w-md w-full">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-red-600">
               Geçersiz Bağlantı
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
+            </h1>
+          </div>
+          <div className="text-center space-y-4">
             <p className="text-gray-600">
               Bu şifre sıfırlama bağlantısı geçersiz veya süresi dolmuş.
             </p>
@@ -135,8 +133,8 @@ function ResetPasswordContent() {
             >
               Yeni şifre sıfırlama bağlantısı talep et
             </Link>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
@@ -144,27 +142,27 @@ function ResetPasswordContent() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="max-w-md w-full">
-          <CardHeader className="text-center">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 max-w-md w-full">
+          <div className="text-center mb-6">
             <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900">
               Şifre Değiştirildi
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
+            </h1>
+          </div>
+          <div className="text-center space-y-4">
             <p className="text-gray-600">
               Şifreniz başarıyla değiştirildi. Artık yeni şifrenizle giriş yapabilirsiniz.
             </p>
             <Link 
               href="/admin"
-              className="inline-block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 font-medium"
+              className="inline-block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 font-medium transition-colors"
             >
               Giriş Yap
             </Link>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
@@ -172,19 +170,19 @@ function ResetPasswordContent() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <Card>
-          <CardHeader className="text-center">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+          <div className="text-center mb-6">
             <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
               <Lock className="w-8 h-8 text-blue-600" />
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900">
               Yeni Şifre Belirle
-            </CardTitle>
+            </h1>
             <p className="text-gray-600">
               Hesabınız için yeni bir şifre belirleyin
             </p>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <Label htmlFor="password">Yeni Şifre</Label>
@@ -252,13 +250,13 @@ function ResetPasswordContent() {
                 </Alert>
               )}
 
-              <Button
+              <button
                 type="submit"
-                className="w-full"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={loading}
               >
                 {loading ? 'Şifre Değiştiriliyor...' : 'Şifreyi Değiştir'}
-              </Button>
+              </button>
 
               <div className="text-center">
                 <Link 
@@ -269,8 +267,8 @@ function ResetPasswordContent() {
                 </Link>
               </div>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

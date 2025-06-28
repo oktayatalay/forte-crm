@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 
 export default function AdminLogin() {
@@ -81,17 +80,16 @@ export default function AdminLogin() {
         
         {!showForgotPassword ? (
           // Login Form
-          <Card>
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold text-gray-900">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div className="text-center mb-6">
+              <h1 className="text-2xl font-bold text-gray-900">
                 Admin Panel
-              </CardTitle>
-              <CardDescription>
+              </h1>
+              <p className="text-gray-600 mt-2">
                 Forte Panel yönetici girişi
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleLogin} className="space-y-4">
+              </p>
+            </div>
+            <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">E-posta Adresi</Label>
                   <Input
@@ -118,7 +116,7 @@ export default function AdminLogin() {
 
                 <Button 
                   type="submit" 
-                  className="w-full"
+                  className="w-full bg-blue-600 hover:bg-blue-700"
                   disabled={loading}
                 >
                   {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
@@ -132,22 +130,20 @@ export default function AdminLogin() {
                     Şifremi unuttum
                   </a>
                 </div>
-              </form>
-            </CardContent>
-          </Card>
+            </form>
+          </div>
         ) : (
           // Forgot Password Form
-          <Card>
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold text-gray-900">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div className="text-center mb-6">
+              <h1 className="text-2xl font-bold text-gray-900">
                 Şifre Sıfırlama
-              </CardTitle>
-              <CardDescription>
+              </h1>
+              <p className="text-gray-600 mt-2">
                 E-posta adresinizi girin, şifre sıfırlama bağlantısı göndereceğiz
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleForgotPassword} className="space-y-4">
+              </p>
+            </div>
+            <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="resetEmail">E-posta Adresi</Label>
                   <Input
@@ -162,7 +158,7 @@ export default function AdminLogin() {
 
                 <Button 
                   type="submit" 
-                  className="w-full"
+                  className="w-full bg-blue-600 hover:bg-blue-700"
                   disabled={loading}
                 >
                   {loading ? 'Gönderiliyor...' : 'Şifre Sıfırlama Bağlantısı Gönder'}
@@ -177,9 +173,8 @@ export default function AdminLogin() {
                     ← Giriş sayfasına dön
                   </button>
                 </div>
-              </form>
-            </CardContent>
-          </Card>
+            </form>
+          </div>
         )}
 
         {/* Footer */}

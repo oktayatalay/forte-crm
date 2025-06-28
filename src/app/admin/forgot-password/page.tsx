@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -50,39 +49,39 @@ export default function ForgotPassword() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
-          <Card>
-            <CardHeader className="text-center">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <div className="text-center">
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-              <CardTitle className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">
                 E-posta Gönderildi
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="text-center">
-                <p className="text-gray-600">
-                  Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.
-                  E-postanızı kontrol edin ve talimatları takip edin.
-                </p>
-              </div>
-              
-              {message && (
-                <Alert>
-                  <AlertDescription>{message}</AlertDescription>
-                </Alert>
-              )}
+              </h1>
+              <div className="space-y-6">
+                <div className="text-center">
+                  <p className="text-gray-600">
+                    Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.
+                    E-postanızı kontrol edin ve talimatları takip edin.
+                  </p>
+                </div>
+                
+                {message && (
+                  <Alert>
+                    <AlertDescription>{message}</AlertDescription>
+                  </Alert>
+                )}
 
-              <div className="text-center">
-                <Link 
-                  href="/admin"
-                  className="text-blue-600 hover:text-blue-500 font-medium"
-                >
-                  Giriş sayfasına dön
-                </Link>
+                <div className="text-center">
+                  <Link 
+                    href="/admin"
+                    className="text-blue-600 hover:text-blue-500 font-medium"
+                  >
+                    Giriş sayfasına dön
+                  </Link>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -91,59 +90,58 @@ export default function ForgotPassword() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <Card>
-          <CardHeader className="text-center">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+          <div className="text-center">
             <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
               <Mail className="w-8 h-8 text-blue-600" />
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
               Şifremi Unuttum
-            </CardTitle>
-            <p className="text-gray-600">
+            </h1>
+            <p className="text-gray-600 mb-6">
               E-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim
             </p>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <Label htmlFor="email">E-posta Adresi</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@fortetourism.com"
-                  required
-                  disabled={loading}
-                />
-              </div>
-
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              <Button
-                type="submit"
-                className="w-full"
+          </div>
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <Label htmlFor="email">E-posta Adresi</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@fortetourism.com"
+                required
                 disabled={loading}
-              >
-                {loading ? 'Gönderiliyor...' : 'Şifre Sıfırlama Bağlantısı Gönder'}
-              </Button>
+              />
+            </div>
 
-              <div className="text-center">
-                <Link 
-                  href="/admin"
-                  className="inline-flex items-center text-sm text-blue-600 hover:text-blue-500"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-1" />
-                  Giriş sayfasına dön
-                </Link>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700"
+              disabled={loading}
+            >
+              {loading ? 'Gönderiliyor...' : 'Şifre Sıfırlama Bağlantısı Gönder'}
+            </Button>
+
+            <div className="text-center">
+              <Link 
+                href="/admin"
+                className="inline-flex items-center text-sm text-blue-600 hover:text-blue-500"
+              >
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                Giriş sayfasına dön
+              </Link>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
