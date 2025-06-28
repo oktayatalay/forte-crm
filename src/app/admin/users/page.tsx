@@ -267,19 +267,23 @@ export default function UserManagement() {
   const sortedUsers = [...filteredUsers].sort((a, b) => {
     if (!sortField) return 0;
     
-    let aValue: any = a[sortField] || '';
-    let bValue: any = b[sortField] || '';
+    let aValue: string | number;
+    let bValue: string | number;
     
     // Special handling for offices array
     if (sortField === 'offices') {
       aValue = Array.isArray(a.offices) ? a.offices.join(', ') : (a.offices || '');
       bValue = Array.isArray(b.offices) ? b.offices.join(', ') : (b.offices || '');
     }
-    
     // Special handling for birth_date
-    if (sortField === 'birth_date') {
+    else if (sortField === 'birth_date') {
       aValue = a.birth_date ? new Date(a.birth_date).getTime() : 0;
       bValue = b.birth_date ? new Date(b.birth_date).getTime() : 0;
+    }
+    // Default handling for other fields
+    else {
+      aValue = (a[sortField] as string) || '';
+      bValue = (b[sortField] as string) || '';
     }
     
     if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
