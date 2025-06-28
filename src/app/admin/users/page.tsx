@@ -29,10 +29,20 @@ interface Department {
   name: string;
 }
 
+interface Office {
+  code: string;
+  name: string;
+  address?: string;
+  phone?: string;
+  sort_order?: number;
+  is_active?: boolean;
+}
+
 
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [offices, setOffices] = useState<Office[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddUser, setShowAddUser] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -59,6 +69,7 @@ export default function UserManagement() {
   useEffect(() => {
     verifyAdminSession();
     loadUsers();
+    loadOffices();
   }, []);
 
   const verifyAdminSession = async () => {
@@ -113,6 +124,38 @@ export default function UserManagement() {
     }
   };
 
+  const loadOffices = async () => {
+    try {
+      const response = await fetch('/api/endpoints/get_offices.php', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setOffices(data.offices || []);
+      } else {
+        console.error('Ofisler yüklenemedi:', data.error);
+        // Fallback data if API fails
+        setOffices([
+          { code: 'istanbul', name: 'Istanbul Office' },
+          { code: 'dubai', name: 'Dubai Office' },
+          { code: 'athens', name: 'Athens Office' }
+        ]);
+      }
+    } catch (error) {
+      console.error('Ofis yükleme hatası:', error);
+      // Fallback data if fetch fails
+      setOffices([
+        { code: 'istanbul', name: 'Istanbul Office' },
+        { code: 'dubai', name: 'Dubai Office' },
+        { code: 'athens', name: 'Athens Office' }
+      ]);
+    }
+  };
 
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -492,15 +535,23 @@ export default function UserManagement() {
 
                   <div className="space-y-2">
                     <Label htmlFor="offices">Ofisler</Label>
-                    <Input
+                    <select
                       id="offices"
-                      placeholder="Ofisleri virgülle ayırın"
-                      value={Array.isArray(newUser.offices) ? newUser.offices.join(', ') : ''}
+                      multiple
+                      className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      value={Array.isArray(newUser.offices) ? newUser.offices : []}
                       onChange={(e) => {
-                        const officesArray = e.target.value.split(',').map(office => office.trim()).filter(office => office.length > 0);
-                        setNewUser(prev => ({ ...prev, offices: officesArray }));
+                        const selectedOffices = Array.from(e.target.selectedOptions, option => option.value);
+                        setNewUser(prev => ({ ...prev, offices: selectedOffices }));
                       }}
-                    />
+                    >
+                      {offices.map((office) => (
+                        <option key={office.code} value={office.code}>
+                          {office.name}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">Birden fazla ofis seçmek için Ctrl/Cmd tuşuna basarak tıklayın</p>
                   </div>
                 </div>
 
@@ -638,15 +689,23 @@ export default function UserManagement() {
 
                   <div className="space-y-2">
                     <Label htmlFor="editOffices">Ofisler</Label>
-                    <Input
+                    <select
                       id="editOffices"
-                      placeholder="Ofisleri virgülle ayırın"
-                      value={Array.isArray(editingUser.offices) ? editingUser.offices.join(', ') : ''}
+                      multiple
+                      className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      value={Array.isArray(editingUser.offices) ? editingUser.offices : []}
                       onChange={(e) => {
-                        const officesArray = e.target.value.split(',').map(office => office.trim()).filter(office => office.length > 0);
-                        setEditingUser(prev => prev ? { ...prev, offices: officesArray } : null);
+                        const selectedOffices = Array.from(e.target.selectedOptions, option => option.value);
+                        setEditingUser(prev => prev ? { ...prev, offices: selectedOffices } : null);
                       }}
-                    />
+                    >
+                      {offices.map((office) => (
+                        <option key={office.code} value={office.code}>
+                          {office.name}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">Birden fazla ofis seçmek için Ctrl/Cmd tuşuna basarak tıklayın</p>
                   </div>
                 </div>
 
@@ -669,9 +728,6 @@ export default function UserManagement() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider w-8">
-                    <input type="checkbox" className="rounded border-gray-300" />
-                  </th>
                   <th 
                     className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
                     onClick={() => handleSort('name')}
@@ -731,9 +787,6 @@ export default function UserManagement() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {paginatedUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-4">
-                      <input type="checkbox" className="rounded border-gray-300" />
-                    </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mr-3">
