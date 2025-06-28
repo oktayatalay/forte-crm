@@ -267,8 +267,20 @@ export default function UserManagement() {
   const sortedUsers = [...filteredUsers].sort((a, b) => {
     if (!sortField) return 0;
     
-    const aValue = a[sortField] || '';
-    const bValue = b[sortField] || '';
+    let aValue: any = a[sortField] || '';
+    let bValue: any = b[sortField] || '';
+    
+    // Special handling for offices array
+    if (sortField === 'offices') {
+      aValue = Array.isArray(a.offices) ? a.offices.join(', ') : (a.offices || '');
+      bValue = Array.isArray(b.offices) ? b.offices.join(', ') : (b.offices || '');
+    }
+    
+    // Special handling for birth_date
+    if (sortField === 'birth_date') {
+      aValue = a.birth_date ? new Date(a.birth_date).getTime() : 0;
+      bValue = b.birth_date ? new Date(b.birth_date).getTime() : 0;
+    }
     
     if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
     if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
@@ -430,6 +442,62 @@ export default function UserManagement() {
                       ))}
                     </select>
                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="gender">Cinsiyet</Label>
+                    <select
+                      id="gender"
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      value={newUser.gender}
+                      onChange={(e) => setNewUser(prev => ({ ...prev, gender: e.target.value }))}
+                    >
+                      <option value="">Cinsiyet Seçiniz</option>
+                      <option value="male">Erkek</option>
+                      <option value="female">Kadın</option>
+                      <option value="other">Diğer</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="birth_date">Doğum Tarihi</Label>
+                    <Input
+                      id="birth_date"
+                      type="date"
+                      value={newUser.birth_date}
+                      onChange={(e) => setNewUser(prev => ({ ...prev, birth_date: e.target.value }))}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="city">Yaşadığı Şehir</Label>
+                    <Input
+                      id="city"
+                      value={newUser.city}
+                      onChange={(e) => setNewUser(prev => ({ ...prev, city: e.target.value }))}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Adres</Label>
+                    <Input
+                      id="address"
+                      value={newUser.address}
+                      onChange={(e) => setNewUser(prev => ({ ...prev, address: e.target.value }))}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="offices">Ofisler</Label>
+                    <Input
+                      id="offices"
+                      placeholder="Ofisleri virgülle ayırın"
+                      value={Array.isArray(newUser.offices) ? newUser.offices.join(', ') : ''}
+                      onChange={(e) => {
+                        const officesArray = e.target.value.split(',').map(office => office.trim()).filter(office => office.length > 0);
+                        setNewUser(prev => ({ ...prev, offices: officesArray }));
+                      }}
+                    />
+                  </div>
                 </div>
 
                 <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
@@ -520,6 +588,62 @@ export default function UserManagement() {
                       ))}
                     </select>
                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="editGender">Cinsiyet</Label>
+                    <select
+                      id="editGender"
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      value={editingUser.gender || ''}
+                      onChange={(e) => setEditingUser(prev => prev ? { ...prev, gender: e.target.value } : null)}
+                    >
+                      <option value="">Cinsiyet Seçiniz</option>
+                      <option value="male">Erkek</option>
+                      <option value="female">Kadın</option>
+                      <option value="other">Diğer</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="editBirthDate">Doğum Tarihi</Label>
+                    <Input
+                      id="editBirthDate"
+                      type="date"
+                      value={editingUser.birth_date || ''}
+                      onChange={(e) => setEditingUser(prev => prev ? { ...prev, birth_date: e.target.value } : null)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="editCity">Yaşadığı Şehir</Label>
+                    <Input
+                      id="editCity"
+                      value={editingUser.city || ''}
+                      onChange={(e) => setEditingUser(prev => prev ? { ...prev, city: e.target.value } : null)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="editAddress">Adres</Label>
+                    <Input
+                      id="editAddress"
+                      value={editingUser.address || ''}
+                      onChange={(e) => setEditingUser(prev => prev ? { ...prev, address: e.target.value } : null)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="editOffices">Ofisler</Label>
+                    <Input
+                      id="editOffices"
+                      placeholder="Ofisleri virgülle ayırın"
+                      value={Array.isArray(editingUser.offices) ? editingUser.offices.join(', ') : ''}
+                      onChange={(e) => {
+                        const officesArray = e.target.value.split(',').map(office => office.trim()).filter(office => office.length > 0);
+                        setEditingUser(prev => prev ? { ...prev, offices: officesArray } : null);
+                      }}
+                    />
+                  </div>
                 </div>
 
                 <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
@@ -556,11 +680,14 @@ export default function UserManagement() {
                   >
                     E-POSTA <span className="ml-1">{sortField === 'email' ? (sortDirection === 'asc' ? '▲' : '▼') : '▲'}</span>
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700">
-                    TELEFON NUMARALARI <span className="ml-1">▲</span>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    TELEFON NUMARALARI
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700">
-                    OFİS <span className="ml-1">▲</span>
+                  <th 
+                    className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                    onClick={() => handleSort('offices')}
+                  >
+                    OFİS <span className="ml-1">{sortField === 'offices' ? (sortDirection === 'asc' ? '▲' : '▼') : '▲'}</span>
                   </th>
                   <th 
                     className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
@@ -568,8 +695,11 @@ export default function UserManagement() {
                   >
                     DEPARTMAN <span className="ml-1">{sortField === 'department_name' ? (sortDirection === 'asc' ? '▲' : '▼') : '▲'}</span>
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700">
-                    TITLE <span className="ml-1">▲</span>
+                  <th 
+                    className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                    onClick={() => handleSort('title')}
+                  >
+                    TITLE <span className="ml-1">{sortField === 'title' ? (sortDirection === 'asc' ? '▲' : '▼') : '▲'}</span>
                   </th>
                   <th 
                     className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
@@ -577,11 +707,17 @@ export default function UserManagement() {
                   >
                     YAŞADIĞI ŞEHİR <span className="ml-1">{sortField === 'city' ? (sortDirection === 'asc' ? '▲' : '▼') : '▲'}</span>
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700">
-                    CİNSİYET <span className="ml-1">▲</span>
+                  <th 
+                    className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                    onClick={() => handleSort('gender')}
+                  >
+                    CİNSİYET <span className="ml-1">{sortField === 'gender' ? (sortDirection === 'asc' ? '▲' : '▼') : '▲'}</span>
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700">
-                    DOĞUM TARİHİ <span className="ml-1">▲</span>
+                  <th 
+                    className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                    onClick={() => handleSort('birth_date')}
+                  >
+                    DOĞUM TARİHİ <span className="ml-1">{sortField === 'birth_date' ? (sortDirection === 'asc' ? '▲' : '▼') : '▲'}</span>
                   </th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
                     
