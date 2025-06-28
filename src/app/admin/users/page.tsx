@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 
 interface User {
   id: number;
@@ -266,9 +267,9 @@ export default function UserManagement() {
     }
   };
 
-  const downloadCSV = () => {
-    const headers = ['Adı Soyadı', 'E-posta', 'Şirket Telefonu', 'Şahsi Telefonu', 'Ofis', 'Departman', 'Title', 'Yaşadığı Şehir', 'Cinsiyet', 'Doğum Tarihi'];
-    const csvData = sortedUsers.map(user => [
+  const downloadExcel = () => {
+    const headers = ['Adı Soyadı', 'E-posta', 'Şirket Telefonu', 'Şahsi Telefonu', 'Ofis', 'Departman', 'Title', 'Yaşadığı Şehir', 'Adres', 'Cinsiyet', 'Doğum Tarihi'];
+    const excelData = sortedUsers.map(user => [
       user.name || '',
       user.email,
       user.mobile_phone_1 || '',
@@ -277,23 +278,53 @@ export default function UserManagement() {
       user.department_name || '',
       user.title || '',
       user.city || '',
+      user.address || '',
       user.gender === 'male' ? 'Erkek' : user.gender === 'female' ? 'Kadın' : user.gender === 'other' ? 'Diğer' : '',
       user.birth_date ? new Date(user.birth_date).toLocaleDateString('tr-TR') : ''
     ]);
 
-    const csvContent = [headers, ...csvData]
-      .map(row => row.map(field => `"${field}"`).join(','))
-      .join('\n');
+    // Create worksheet
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...excelData]);
+    
+    // Set column widths for better formatting
+    const columnWidths = [
+      { wch: 25 }, // Adı Soyadı
+      { wch: 30 }, // E-posta
+      { wch: 15 }, // Şirket Telefonu
+      { wch: 15 }, // Şahsi Telefonu
+      { wch: 20 }, // Ofis
+      { wch: 20 }, // Departman
+      { wch: 25 }, // Title
+      { wch: 15 }, // Yaşadığı Şehir
+      { wch: 40 }, // Adres
+      { wch: 10 }, // Cinsiyet
+      { wch: 12 }  // Doğum Tarihi
+    ];
+    worksheet['!cols'] = columnWidths;
 
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `kullanicilar_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Style the header row
+    const headerRange = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+    for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+      if (!worksheet[cellAddress]) continue;
+      worksheet[cellAddress].s = {
+        font: { bold: true, color: { rgb: 'FFFFFF' } },
+        fill: { fgColor: { rgb: '4F46E5' } },
+        alignment: { horizontal: 'center' }
+      };
+    }
+
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Kullanıcılar');
+    
+    // Generate filename with date
+    const filename = `kullanicilar_${new Date().toISOString().split('T')[0]}.xlsx`;
+    
+    // Download file
+    XLSX.writeFile(workbook, filename);
+    
+    toast.success(`Excel dosyası indirildi: ${filename}`);
   };
 
   const handleSort = (field: keyof User) => {
@@ -409,9 +440,9 @@ export default function UserManagement() {
                 variant="outline" 
                 size="sm" 
                 className="text-gray-600"
-                onClick={downloadCSV}
+                onClick={downloadExcel}
               >
-                📥 Download
+                📊 Excel İndir
               </Button>
               <Button onClick={() => setShowAddUser(true)} className="bg-blue-600 hover:bg-blue-700">
                 ➕ Add new
