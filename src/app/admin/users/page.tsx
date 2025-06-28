@@ -51,6 +51,14 @@ export default function UserManagement() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    office: '',
+    department: '',
+    title: '',
+    city: '',
+    gender: ''
+  });
 
   const [newUser, setNewUser] = useState({
     email: '',
@@ -297,15 +305,39 @@ export default function UserManagement() {
     }
   };
 
-  const filteredUsers = users.filter(user => 
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (user.title && user.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (user.department_name && user.department_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (user.city && user.city.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (user.mobile_phone_1 && user.mobile_phone_1.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (user.mobile_phone_2 && user.mobile_phone_2.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredUsers = users.filter(user => {
+    // Search term filter
+    const matchesSearch = searchTerm === '' || 
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (user.title && user.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (user.department_name && user.department_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (user.city && user.city.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (user.mobile_phone_1 && user.mobile_phone_1.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (user.mobile_phone_2 && user.mobile_phone_2.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    // Office filter
+    const matchesOffice = filters.office === '' || 
+      (Array.isArray(user.offices) && user.offices.includes(filters.office));
+
+    // Department filter
+    const matchesDepartment = filters.department === '' || 
+      (user.department_id && user.department_id.toString() === filters.department);
+
+    // Title filter
+    const matchesTitle = filters.title === '' || 
+      (user.title && user.title.toLowerCase().includes(filters.title.toLowerCase()));
+
+    // City filter
+    const matchesCity = filters.city === '' || 
+      (user.city && user.city.toLowerCase().includes(filters.city.toLowerCase()));
+
+    // Gender filter
+    const matchesGender = filters.gender === '' || 
+      (user.gender === filters.gender);
+
+    return matchesSearch && matchesOffice && matchesDepartment && matchesTitle && matchesCity && matchesGender;
+  });
 
   const sortedUsers = [...filteredUsers].sort((a, b) => {
     if (!sortField) return 0;
@@ -408,11 +440,118 @@ export default function UserManagement() {
                 </div>
               </div>
             </div>
-            <Button variant="outline" size="sm" className="ml-4">
-              🔽 Filter
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="ml-4"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              🔽 Filter {showFilters ? '▲' : '▼'}
             </Button>
           </div>
         </div>
+
+        {/* Filter Panel */}
+        {showFilters && (
+          <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">Filters</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Filter users by various criteria
+              </p>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {/* Office Filter */}
+                <div className="space-y-2">
+                  <Label htmlFor="filterOffice">Ofis</Label>
+                  <select
+                    id="filterOffice"
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    value={filters.office}
+                    onChange={(e) => setFilters(prev => ({ ...prev, office: e.target.value }))}
+                  >
+                    <option value="">Tüm Ofisler</option>
+                    {offices.map((office) => (
+                      <option key={office.code} value={office.code}>
+                        {office.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Department Filter */}
+                <div className="space-y-2">
+                  <Label htmlFor="filterDepartment">Departman</Label>
+                  <select
+                    id="filterDepartment"
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    value={filters.department}
+                    onChange={(e) => setFilters(prev => ({ ...prev, department: e.target.value }))}
+                  >
+                    <option value="">Tüm Departmanlar</option>
+                    {departments.map((dept) => (
+                      <option key={dept.id} value={dept.id.toString()}>
+                        {dept.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Title Filter */}
+                <div className="space-y-2">
+                  <Label htmlFor="filterTitle">Title</Label>
+                  <Input
+                    id="filterTitle"
+                    placeholder="Title'a göre filtrele"
+                    value={filters.title}
+                    onChange={(e) => setFilters(prev => ({ ...prev, title: e.target.value }))}
+                    className="h-9"
+                  />
+                </div>
+
+                {/* City Filter */}
+                <div className="space-y-2">
+                  <Label htmlFor="filterCity">Şehir</Label>
+                  <Input
+                    id="filterCity"
+                    placeholder="Şehire göre filtrele"
+                    value={filters.city}
+                    onChange={(e) => setFilters(prev => ({ ...prev, city: e.target.value }))}
+                    className="h-9"
+                  />
+                </div>
+
+                {/* Gender Filter */}
+                <div className="space-y-2">
+                  <Label htmlFor="filterGender">Cinsiyet</Label>
+                  <select
+                    id="filterGender"
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    value={filters.gender}
+                    onChange={(e) => setFilters(prev => ({ ...prev, gender: e.target.value }))}
+                  >
+                    <option value="">Tüm Cinsiyetler</option>
+                    <option value="male">Erkek</option>
+                    <option value="female">Kadın</option>
+                    <option value="other">Diğer</option>
+                  </select>
+                </div>
+              </div>
+              
+              {/* Filter Actions */}
+              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 mt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setFilters({ office: '', department: '', title: '', city: '', gender: '' })}
+                >
+                  Filtreleri Temizle
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Add User Modal */}
         {showAddUser && (
@@ -894,6 +1033,11 @@ export default function UserManagement() {
         <div className="mt-6 flex items-center justify-between">
           <div className="text-sm text-gray-700">
             Showing <span className="font-medium">{((currentPage - 1) * itemsPerPage) + 1}</span> to <span className="font-medium">{Math.min(currentPage * itemsPerPage, sortedUsers.length)}</span> of <span className="font-medium">{sortedUsers.length}</span> results
+            {sortedUsers.length !== users.length && (
+              <span className="ml-2 text-blue-600">
+                (filtered from {users.length} total)
+              </span>
+            )}
           </div>
           <div className="flex items-center space-x-2">
             <Button 
