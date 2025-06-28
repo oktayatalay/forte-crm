@@ -325,9 +325,10 @@ export default function DepartmentManagement() {
 
       {/* Main Content */}
       <main className="px-6 lg:px-8 py-6">
-        
-        {/* Search Bar */}
-        <div className="mb-6">
+        <div className="max-w-7xl mx-auto">
+          
+            {/* Search Bar */}
+          <div className="mb-6">
           <div className="flex justify-between items-center">
             <div className="flex-1 max-w-lg">
               <div className="relative">
@@ -345,8 +346,8 @@ export default function DepartmentManagement() {
           </div>
         </div>
 
-        {/* Departments Table */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+          {/* Departments Table */}
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
               <Building2 className="w-5 h-5" />
@@ -414,6 +415,7 @@ export default function DepartmentManagement() {
               ))}
             </div>
           </div>
+        </div>
         </div>
       </main>
 
