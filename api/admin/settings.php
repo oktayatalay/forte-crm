@@ -49,14 +49,9 @@ try {
     switch ($method) {
         case 'GET':
             // Ayarları getir
-            $stmt = $db->prepare("SELECT setting_key, setting_value FROM system_settings");
+            $stmt = $db->prepare("SELECT id, setting_key, setting_value, description, updated_at FROM system_settings ORDER BY setting_key");
             $stmt->execute();
-            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            $settings = [];
-            foreach ($rows as $row) {
-                $settings[$row['setting_key']] = $row['setting_value'];
-            }
+            $settings = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             echo json_encode([
                 'success' => true,
@@ -64,33 +59,26 @@ try {
             ]);
             break;
             
-        case 'POST':
-            // Ayarları kaydet
+        case 'PUT':
+            // Ayarları güncelle
             $input = json_decode(file_get_contents('php://input'), true);
-            
-            if (!$input['type']) {
-                http_response_code(400);
-                echo json_encode(['error' => 'Ayar tipi gerekli']);
-                exit;
-            }
-            
-            $type = $input['type'];
-            unset($input['type']);
             
             // Her ayar için upsert işlemi yap
             $stmt = $db->prepare("
-                INSERT INTO system_settings (setting_key, setting_value, created_at, updated_at) 
-                VALUES (?, ?, NOW(), NOW()) 
+                INSERT INTO system_settings (setting_key, setting_value, updated_at) 
+                VALUES (?, ?, NOW()) 
                 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = NOW()
             ");
             
             foreach ($input as $key => $value) {
-                $stmt->execute([$key, $value]);
+                if (!empty($key) && $value !== null) {
+                    $stmt->execute([$key, $value]);
+                }
             }
             
             echo json_encode([
                 'success' => true,
-                'message' => 'Ayarlar başarıyla kaydedildi'
+                'message' => 'Ayarlar başarıyla güncellendi'
             ]);
             break;
             
