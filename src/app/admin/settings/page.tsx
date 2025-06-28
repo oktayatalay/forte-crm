@@ -5,7 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Settings, Save, Building2 } from 'lucide-react';
+import { Settings, Save, Building2, MapPin, Eye, EyeOff, Plus } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -17,10 +20,26 @@ interface SystemSetting {
   updated_at: string;
 }
 
+interface Office {
+  id: number;
+  code: string;
+  name: string;
+  address: string;
+  phone: string;
+  is_active: number;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export default function SystemSettings() {
   const [settings, setSettings] = useState<SystemSetting[]>([]);
+  const [offices, setOffices] = useState<Office[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isOfficeDialogOpen, setIsOfficeDialogOpen] = useState(false);
+  const [isEditOfficeDialogOpen, setIsEditOfficeDialogOpen] = useState(false);
+  const [editingOffice, setEditingOffice] = useState<Office | null>(null);
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -29,6 +48,15 @@ export default function SystemSettings() {
     company_phone: '',
     company_email: '',
     company_website: ''
+  });
+
+  const [officeFormData, setOfficeFormData] = useState({
+    code: '',
+    name: '',
+    address: '',
+    phone: '',
+    is_active: 1,
+    sort_order: 0
   });
 
   const checkAuth = useCallback(async () => {
@@ -54,6 +82,7 @@ export default function SystemSettings() {
       }
 
       fetchSettings();
+      fetchOffices();
     } catch (error) {
       console.error('Auth error:', error);
       localStorage.removeItem('admin_token');
@@ -97,6 +126,22 @@ export default function SystemSettings() {
     }
   };
 
+  const fetchOffices = async () => {
+    const token = localStorage.getItem('admin_token');
+    try {
+      const response = await fetch('/api/admin/offices.php', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setOffices(data.offices);
+      }
+    } catch (error) {
+      console.error('Fetch offices error:', error);
+      toast.error('Ofisler yüklenemedi');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -124,6 +169,123 @@ export default function SystemSettings() {
       toast.error('Bağlantı hatası');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleOfficeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+
+    const token = localStorage.getItem('admin_token');
+    try {
+      const url = '/api/admin/offices.php';
+      const method = editingOffice ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(editingOffice ? { ...officeFormData, id: editingOffice.id } : officeFormData)
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast.success(editingOffice ? 'Ofis güncellendi' : 'Ofis eklendi');
+        fetchOffices();
+        setIsOfficeDialogOpen(false);
+        setIsEditOfficeDialogOpen(false);
+        setEditingOffice(null);
+        setOfficeFormData({
+          code: '',
+          name: '',
+          address: '',
+          phone: '',
+          is_active: 1,
+          sort_order: 0
+        });
+      } else {
+        toast.error(data.error || 'İşlem başarısız');
+      }
+    } catch (error) {
+      console.error('Office submit error:', error);
+      toast.error('Bağlantı hatası');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEditOffice = (office: Office) => {
+    setEditingOffice(office);
+    setOfficeFormData({
+      code: office.code,
+      name: office.name,
+      address: office.address,
+      phone: office.phone,
+      is_active: office.is_active,
+      sort_order: office.sort_order
+    });
+    setIsEditOfficeDialogOpen(true);
+  };
+
+  const handleDeleteOffice = async (officeId: number) => {
+    if (!confirm('Bu ofisi silmek istediğinizden emin misiniz?')) {
+      return;
+    }
+
+    const token = localStorage.getItem('admin_token');
+    try {
+      const response = await fetch('/api/admin/offices.php', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ id: officeId })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast.success('Ofis silindi');
+        fetchOffices();
+      } else {
+        toast.error(data.error || 'Silme işlemi başarısız');
+      }
+    } catch (error) {
+      console.error('Delete office error:', error);
+      toast.error('Bağlantı hatası');
+    }
+  };
+
+  const toggleOfficeStatus = async (office: Office) => {
+    const token = localStorage.getItem('admin_token');
+    try {
+      const response = await fetch('/api/admin/offices.php', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          id: office.id,
+          code: office.code,
+          name: office.name,
+          address: office.address,
+          phone: office.phone,
+          is_active: office.is_active === 1 ? 0 : 1,
+          sort_order: office.sort_order
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast.success(`Ofis ${office.is_active === 1 ? 'pasifleştirildi' : 'aktifleştirildi'}`);
+        fetchOffices();
+      }
+    } catch (error) {
+      console.error('Toggle office status error:', error);
+      toast.error('Durum güncellenemedi');
     }
   };
 
@@ -257,6 +419,94 @@ export default function SystemSettings() {
             </div>
           </div>
 
+          {/* Office Management */}
+          <div className="mt-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                  <MapPin className="w-5 h-5" />
+                  Ofis Yönetimi
+                </h3>
+                <Button 
+                  onClick={() => setIsOfficeDialogOpen(true)} 
+                  className="bg-blue-600 hover:bg-blue-700"
+                  size="sm"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Yeni Ofis
+                </Button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="space-y-4">
+                {offices.map((office) => (
+                  <div key={office.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center">
+                          <span className="text-white font-medium text-sm">
+                            {office.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <h3 className="font-medium">{office.name}</h3>
+                          <p className="text-sm text-gray-600">{office.address || 'Adres bulunmuyor'}</p>
+                          <p className="text-xs text-blue-600">{office.phone}</p>
+                          <p className="text-xs text-gray-500">Kod: {office.code}</p>
+                        </div>
+                        <Badge variant={office.is_active === 1 ? 'default' : 'destructive'}>
+                          {office.is_active === 1 ? 'Aktif' : 'Pasif'}
+                        </Badge>
+                        <Badge variant="outline">
+                          Sıra: {office.sort_order}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleOfficeStatus(office)}
+                        className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600"
+                      >
+                        {office.is_active === 1 ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditOffice(office)}
+                        className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600"
+                      >
+                        ✏️
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteOffice(office.id)}
+                        className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600"
+                      >
+                        🗑️
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                {offices.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    <MapPin className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p>Henüz ofis eklenmemiş</p>
+                    <Button 
+                      onClick={() => setIsOfficeDialogOpen(true)} 
+                      variant="outline" 
+                      className="mt-4"
+                    >
+                      İlk ofisi ekle
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Settings History */}
           <div className="mt-6 bg-white rounded-lg border border-gray-200 shadow-sm">
             <div className="px-6 py-4 border-b border-gray-200">
@@ -286,6 +536,192 @@ export default function SystemSettings() {
           </div>
         </div>
       </main>
+
+      {/* Add Office Dialog */}
+      <Dialog open={isOfficeDialogOpen} onOpenChange={setIsOfficeDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Yeni Ofis Ekle</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleOfficeSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="office_code">Ofis Kodu *</Label>
+                  <Input
+                    id="office_code"
+                    value={officeFormData.code}
+                    onChange={(e) => setOfficeFormData({ ...officeFormData, code: e.target.value })}
+                    placeholder="İstanbul"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="office_name">Ofis Adı *</Label>
+                  <Input
+                    id="office_name"
+                    value={officeFormData.name}
+                    onChange={(e) => setOfficeFormData({ ...officeFormData, name: e.target.value })}
+                    placeholder="İstanbul"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="office_address">Adres</Label>
+                <Textarea
+                  id="office_address"
+                  value={officeFormData.address}
+                  onChange={(e) => setOfficeFormData({ ...officeFormData, address: e.target.value })}
+                  placeholder="Tam adres bilgisi"
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="office_phone">Telefon</Label>
+                  <Input
+                    id="office_phone"
+                    value={officeFormData.phone}
+                    onChange={(e) => setOfficeFormData({ ...officeFormData, phone: e.target.value })}
+                    placeholder="+90 212 XXX XX XX"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="office_sort_order">Sıralama</Label>
+                  <Input
+                    id="office_sort_order"
+                    type="number"
+                    value={officeFormData.sort_order}
+                    onChange={(e) => setOfficeFormData({ ...officeFormData, sort_order: parseInt(e.target.value) || 0 })}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="office_status">Durum</Label>
+                <Select 
+                  value={officeFormData.is_active.toString()} 
+                  onValueChange={(value) => setOfficeFormData({ ...officeFormData, is_active: parseInt(value) })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Aktif</SelectItem>
+                    <SelectItem value="0">Pasif</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setIsOfficeDialogOpen(false)}>
+                İptal
+              </Button>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={saving}>
+                {saving ? 'Ekleniyor...' : 'Ofis Ekle'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Office Dialog */}
+      <Dialog open={isEditOfficeDialogOpen} onOpenChange={setIsEditOfficeDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Ofis Düzenle</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleOfficeSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit_office_code">Ofis Kodu *</Label>
+                  <Input
+                    id="edit_office_code"
+                    value={officeFormData.code}
+                    onChange={(e) => setOfficeFormData({ ...officeFormData, code: e.target.value })}
+                    placeholder="İstanbul"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit_office_name">Ofis Adı *</Label>
+                  <Input
+                    id="edit_office_name"
+                    value={officeFormData.name}
+                    onChange={(e) => setOfficeFormData({ ...officeFormData, name: e.target.value })}
+                    placeholder="İstanbul"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="edit_office_address">Adres</Label>
+                <Textarea
+                  id="edit_office_address"
+                  value={officeFormData.address}
+                  onChange={(e) => setOfficeFormData({ ...officeFormData, address: e.target.value })}
+                  placeholder="Tam adres bilgisi"
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit_office_phone">Telefon</Label>
+                  <Input
+                    id="edit_office_phone"
+                    value={officeFormData.phone}
+                    onChange={(e) => setOfficeFormData({ ...officeFormData, phone: e.target.value })}
+                    placeholder="+90 212 XXX XX XX"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit_office_sort_order">Sıralama</Label>
+                  <Input
+                    id="edit_office_sort_order"
+                    type="number"
+                    value={officeFormData.sort_order}
+                    onChange={(e) => setOfficeFormData({ ...officeFormData, sort_order: parseInt(e.target.value) || 0 })}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="edit_office_status">Durum</Label>
+                <Select 
+                  value={officeFormData.is_active.toString()} 
+                  onValueChange={(value) => setOfficeFormData({ ...officeFormData, is_active: parseInt(value) })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Aktif</SelectItem>
+                    <SelectItem value="0">Pasif</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setIsEditOfficeDialogOpen(false)}>
+                İptal
+              </Button>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={saving}>
+                {saving ? 'Güncelleniyor...' : 'Ofis Güncelle'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
