@@ -20,14 +20,19 @@ try {
     $db = new Database();
     $conn = $db->getConnection();
     
-    // Verify admin token
-    $stmt = $conn->prepare("SELECT * FROM admin_users WHERE session_token = ? AND is_active = 1");
+    // Verify admin session using existing session system
+    $stmt = $conn->prepare("
+        SELECT a.id, a.email, a.full_name, a.role, a.is_active 
+        FROM admin_sessions s 
+        JOIN admin_users a ON s.admin_id = a.id 
+        WHERE s.session_token = ? AND s.expires_at > NOW() AND a.is_active = 1
+    ");
     $stmt->execute([$token]);
     $admin = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$admin) {
         http_response_code(401);
-        echo json_encode(['message' => 'Geçersiz token']);
+        echo json_encode(['message' => 'Geçersiz veya süresi dolmuş session']);
         exit;
     }
     
