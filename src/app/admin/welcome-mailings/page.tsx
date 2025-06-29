@@ -168,6 +168,7 @@ export default function WelcomeMailings() {
 
   const applyCropSettings = () => {
     if (completedCrop && uploadedImage) {
+      console.log('Applying crop settings:', completedCrop); // Debug log
       setMailingData(prev => ({
         ...prev,
         userImage: uploadedImage,
@@ -175,6 +176,8 @@ export default function WelcomeMailings() {
       }));
       setShowCropModal(false);
       toast.success('Görsel ayarları kaydedildi');
+    } else {
+      console.log('Cannot apply crop - missing data:', { completedCrop, uploadedImage }); // Debug log
     }
   };
 
@@ -185,15 +188,16 @@ export default function WelcomeMailings() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // First, calculate needed height
+    const baseHeight = 500; // Header height
+    const userSectionHeight = 400; // User info section  
+    const biographyHeight = calculateBiographyHeight(mailingData.biographyTurkish, mailingData.biographyEnglish);
+    const footerHeight = 150; // Estimated footer height
+    const totalHeight = baseHeight + userSectionHeight + biographyHeight + footerHeight + 40; // 40px final padding
+
     // Set canvas size
     canvas.width = 800;
-    
-    // Calculate height based on content - much longer for all sections
-    const baseHeight = 500; // Header height
-    const userSectionHeight = 400; // User info section
-    const biographyHeight = calculateBiographyHeight(mailingData.biographyTurkish, mailingData.biographyEnglish);
-    const footerHeight = 200; // For welcome message and contact info
-    canvas.height = baseHeight + userSectionHeight + biographyHeight + footerHeight;
+    canvas.height = totalHeight;
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -378,13 +382,16 @@ export default function WelcomeMailings() {
         
         // Apply ReactCrop settings
         const crop = mailingData.cropSettings;
+        console.log('Crop settings:', crop); // Debug log
         
-        if (crop.width && crop.height && crop.unit === '%') {
+        if (crop && crop.width && crop.height && crop.width > 0 && crop.height > 0) {
           // Calculate source crop area from percentage
           const sourceX = (crop.x / 100) * img.naturalWidth;
           const sourceY = (crop.y / 100) * img.naturalHeight;
           const sourceWidth = (crop.width / 100) * img.naturalWidth;
           const sourceHeight = (crop.height / 100) * img.naturalHeight;
+          
+          console.log('Crop calculation:', { sourceX, sourceY, sourceWidth, sourceHeight, imgSize: { w: img.naturalWidth, h: img.naturalHeight } });
           
           // Calculate destination size to fill circle
           const destSize = radius * 2;
@@ -404,6 +411,7 @@ export default function WelcomeMailings() {
             destSize
           );
         } else {
+          console.log('Using fallback - no valid crop settings');
           // Fallback: draw full image
           const destSize = radius * 2;
           const destX = centerX - radius;
@@ -467,7 +475,7 @@ export default function WelcomeMailings() {
     return currentY; // Return the final Y position
   };
 
-  const drawFooterSection = (ctx: CanvasRenderingContext2D, user: User, startY: number) => {
+  const drawFooterSection = (ctx: CanvasRenderingContext2D, user: User, startY: number): number => {
     let currentY = startY;
     
     // Draw "Aramıza Hoş Geldin" section with correct fonts
@@ -517,7 +525,10 @@ export default function WelcomeMailings() {
       ctx.textBaseline = 'middle';
       drawPhoneIcon(ctx, startX, currentY);
       ctx.fillText(user.mobile_phone_1, startX + phoneIconWidth + 20, currentY);
+      currentY += 30; // Add some spacing after phone
     }
+    
+    return currentY; // Return final Y position
   };
 
   const drawEmailIcon = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
