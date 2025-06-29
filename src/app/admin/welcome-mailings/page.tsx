@@ -167,17 +167,30 @@ export default function WelcomeMailings() {
   };
 
   const applyCropSettings = () => {
-    if (completedCrop && uploadedImage) {
+    if (completedCrop && uploadedImage && imgRef.current) {
       console.log('Applying crop settings:', completedCrop); // Debug log
+      
+      // Convert px to percentage based on image dimensions
+      const img = imgRef.current;
+      const convertedCrop = {
+        unit: '%' as const,
+        x: (completedCrop.x / img.naturalWidth) * 100,
+        y: (completedCrop.y / img.naturalHeight) * 100,
+        width: (completedCrop.width / img.naturalWidth) * 100,
+        height: (completedCrop.height / img.naturalHeight) * 100
+      };
+      
+      console.log('Converted crop to percentage:', convertedCrop); // Debug log
+      
       setMailingData(prev => ({
         ...prev,
         userImage: uploadedImage,
-        cropSettings: completedCrop
+        cropSettings: convertedCrop
       }));
       setShowCropModal(false);
       toast.success('Görsel ayarları kaydedildi');
     } else {
-      console.log('Cannot apply crop - missing data:', { completedCrop, uploadedImage }); // Debug log
+      console.log('Cannot apply crop - missing data:', { completedCrop, uploadedImage, imgRef: imgRef.current }); // Debug log
     }
   };
 
@@ -385,11 +398,21 @@ export default function WelcomeMailings() {
         console.log('Crop settings:', crop); // Debug log
         
         if (crop && crop.width && crop.height && crop.width > 0 && crop.height > 0) {
-          // Calculate source crop area from percentage
-          const sourceX = (crop.x / 100) * img.naturalWidth;
-          const sourceY = (crop.y / 100) * img.naturalHeight;
-          const sourceWidth = (crop.width / 100) * img.naturalWidth;
-          const sourceHeight = (crop.height / 100) * img.naturalHeight;
+          let sourceX, sourceY, sourceWidth, sourceHeight;
+          
+          if (crop.unit === '%') {
+            // Calculate source crop area from percentage
+            sourceX = (crop.x / 100) * img.naturalWidth;
+            sourceY = (crop.y / 100) * img.naturalHeight;
+            sourceWidth = (crop.width / 100) * img.naturalWidth;
+            sourceHeight = (crop.height / 100) * img.naturalHeight;
+          } else {
+            // Use px values directly
+            sourceX = crop.x;
+            sourceY = crop.y;
+            sourceWidth = crop.width;
+            sourceHeight = crop.height;
+          }
           
           console.log('Crop calculation:', { sourceX, sourceY, sourceWidth, sourceHeight, imgSize: { w: img.naturalWidth, h: img.naturalHeight } });
           
@@ -814,11 +837,21 @@ export default function WelcomeMailings() {
                                   const img = new Image();
                                   img.onload = () => {
                                     const crop = mailingData.cropSettings;
-                                    if (crop.width && crop.height && crop.unit === '%') {
-                                      const sourceX = (crop.x / 100) * img.naturalWidth;
-                                      const sourceY = (crop.y / 100) * img.naturalHeight;
-                                      const sourceWidth = (crop.width / 100) * img.naturalWidth;
-                                      const sourceHeight = (crop.height / 100) * img.naturalHeight;
+                                    if (crop.width && crop.height && crop.width > 0 && crop.height > 0) {
+                                      let sourceX, sourceY, sourceWidth, sourceHeight;
+                                      
+                                      if (crop.unit === '%') {
+                                        sourceX = (crop.x / 100) * img.naturalWidth;
+                                        sourceY = (crop.y / 100) * img.naturalHeight;
+                                        sourceWidth = (crop.width / 100) * img.naturalWidth;
+                                        sourceHeight = (crop.height / 100) * img.naturalHeight;
+                                      } else {
+                                        sourceX = crop.x;
+                                        sourceY = crop.y;
+                                        sourceWidth = crop.width;
+                                        sourceHeight = crop.height;
+                                      }
+                                      
                                       ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, 96, 96);
                                     } else {
                                       ctx.drawImage(img, 0, 0, 96, 96);
