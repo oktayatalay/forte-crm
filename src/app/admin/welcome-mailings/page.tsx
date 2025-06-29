@@ -359,6 +359,7 @@ export default function WelcomeMailings() {
     if (!mailingData.userImage) return;
 
     const img = new Image();
+    img.crossOrigin = 'anonymous'; // Handle CORS
     img.onload = () => {
       ctx.save();
       
@@ -407,6 +408,10 @@ export default function WelcomeMailings() {
       }
       
       ctx.restore();
+      
+      // Trigger canvas re-render after image loads
+      generateMailingCanvas();
+      generateStoryCanvas();
     };
     img.src = mailingData.userImage;
   };
@@ -416,9 +421,9 @@ export default function WelcomeMailings() {
     const lineHeight = 35;
     const paragraphSpacing = 30;
     
-    // Split biographies into sentences/paragraphs
-    const turkishParagraphs = turkishBio.split('.').filter(p => p.trim().length > 0);
-    const englishParagraphs = englishBio.split('.').filter(p => p.trim().length > 0);
+    // Split biographies into paragraphs (by double line breaks)
+    const turkishParagraphs = turkishBio.split('\n\n').filter(p => p.trim().length > 0);
+    const englishParagraphs = englishBio.split('\n\n').filter(p => p.trim().length > 0);
     
     const maxParagraphs = Math.max(turkishParagraphs.length, englishParagraphs.length);
     
@@ -428,7 +433,7 @@ export default function WelcomeMailings() {
         ctx.fillStyle = '#FFFFFF';
         ctx.font = 'italic 500 26px "New York Extra Large"';
         ctx.textAlign = 'center';
-        const turkishText = turkishParagraphs[i].trim() + '.';
+        const turkishText = turkishParagraphs[i].trim();
         const turkishLines = wrapText(ctx, turkishText, 740);
         turkishLines.forEach(line => {
           ctx.fillText(line, 400, currentY);
@@ -442,7 +447,7 @@ export default function WelcomeMailings() {
         ctx.fillStyle = '#CBCBCB';
         ctx.font = 'italic 400 26px "New York Extra Large"';
         ctx.textAlign = 'center';
-        const englishText = englishParagraphs[i].trim() + '.';
+        const englishText = englishParagraphs[i].trim();
         const englishLines = wrapText(ctx, englishText, 740);
         englishLines.forEach(line => {
           ctx.fillText(line, 400, currentY);
@@ -458,15 +463,15 @@ export default function WelcomeMailings() {
     
     // Draw "Aramıza Hoş Geldin" section with correct fonts
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'italic 500 26px "New York Extra Large"'; // Same as Turkish paragraphs
+    ctx.font = '500 26px "New York Extra Large"'; // Removed italic
     ctx.textAlign = 'center';
     ctx.fillText(`Aramıza Hoş Geldin ${user.name}!`, 400, currentY);
     currentY += 50;
     
     ctx.fillStyle = '#CBCBCB';
-    ctx.font = 'italic 400 26px "New York Extra Large"'; // Same as English paragraphs
+    ctx.font = '400 26px "New York Extra Large"'; // Removed italic
     ctx.fillText(`Welcome ${user.name}!`, 400, currentY);
-    currentY += 80;
+    currentY += 40; // Reduced spacing
     
     // Draw email section with better centering
     if (user.email) {
@@ -481,6 +486,7 @@ export default function WelcomeMailings() {
       
       // Draw white line-style email icon
       ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
       drawEmailIcon(ctx, startX, currentY);
       ctx.fillText(user.email, startX + emailIconWidth + 20, currentY);
       currentY += 50;
@@ -499,6 +505,7 @@ export default function WelcomeMailings() {
       
       // Draw white line-style phone icon
       ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
       drawPhoneIcon(ctx, startX, currentY);
       ctx.fillText(user.mobile_phone_1, startX + phoneIconWidth + 20, currentY);
     }
@@ -558,7 +565,7 @@ export default function WelcomeMailings() {
     ctx.fill();
     
     // Draw name text
-    ctx.fillStyle = 'hsla(353, 89%, 78%, 1)';
+    ctx.fillStyle = '#C6162A';
     ctx.font = 'bold 24px SF Pro Display';
     ctx.textAlign = 'center';
     ctx.fillText(name, centerX, y + 5);
