@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 
 interface User {
   id: number;
@@ -30,11 +32,7 @@ interface WelcomeMailingData {
   userImage: string | null;
   biographyTurkish: string;
   biographyEnglish: string;
-  cropSettings: {
-    x: number;
-    y: number;
-    scale: number;
-  };
+  cropSettings: Crop;
 }
 
 export default function WelcomeMailings() {
@@ -49,14 +47,21 @@ export default function WelcomeMailings() {
     userImage: null,
     biographyTurkish: '',
     biographyEnglish: '',
-    cropSettings: { x: 0, y: 0, scale: 1 }
+    cropSettings: {
+      unit: '%',
+      x: 25,
+      y: 25,
+      width: 50,
+      height: 50
+    }
   });
 
   // Image upload and crop states
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [showCropModal, setShowCropModal] = useState(false);
-  const [cropPosition, setCropPosition] = useState({ x: 0, y: 0 });
-  const [cropScale, setCropScale] = useState(1);
+  const [crop, setCrop] = useState<Crop>();
+  const [completedCrop, setCompletedCrop] = useState<Crop>();
+  const imgRef = useRef<HTMLImageElement>(null);
 
   // Canvas refs
   const mailingCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -140,18 +145,37 @@ export default function WelcomeMailings() {
     }
   };
 
+  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { width, height } = e.currentTarget;
+    
+    // Create a circular crop in the center
+    const crop = centerCrop(
+      makeAspectCrop(
+        {
+          unit: '%',
+          width: 80,
+        },
+        1, // aspect ratio for circle
+        width,
+        height,
+      ),
+      width,
+      height,
+    );
+
+    setCrop(crop);
+  };
+
   const applyCropSettings = () => {
-    setMailingData(prev => ({
-      ...prev,
-      userImage: uploadedImage,
-      cropSettings: {
-        x: cropPosition.x,
-        y: cropPosition.y,
-        scale: cropScale
-      }
-    }));
-    setShowCropModal(false);
-    toast.success('Görsel ayarları kaydedildi');
+    if (completedCrop && uploadedImage) {
+      setMailingData(prev => ({
+        ...prev,
+        userImage: uploadedImage,
+        cropSettings: completedCrop
+      }));
+      setShowCropModal(false);
+      toast.success('Görsel ayarları kaydedildi');
+    }
   };
 
   const generateMailingCanvas = () => {
@@ -215,8 +239,8 @@ export default function WelcomeMailings() {
   const drawMailingContent = (ctx: CanvasRenderingContext2D) => {
     if (!selectedUser) return;
     
-    // User image position: 263px from top
-    const userImageY = 263;
+    // User image position: 374px from top
+    const userImageY = 374;
     
     // Draw white circle background for user image
     ctx.fillStyle = '#FFFFFF';
@@ -289,8 +313,8 @@ export default function WelcomeMailings() {
   const drawStoryContent = (ctx: CanvasRenderingContext2D) => {
     if (!selectedUser) return;
     
-    // User image position: 710px from top
-    const userImageY = 710;
+    // User image position: 902px from top
+    const userImageY = 902;
     
     // Draw white circle background for user image (384px diameter = 192px radius)
     ctx.fillStyle = '#FFFFFF';
@@ -343,18 +367,44 @@ export default function WelcomeMailings() {
       ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
       ctx.clip();
       
-      // Apply crop settings and draw image properly
-      const { x, y, scale } = mailingData.cropSettings;
+      // Apply ReactCrop settings
+      const crop = mailingData.cropSettings;
       
-      // Calculate image dimensions to fill the circle
-      const imageSize = radius * 2;
-      const scaledSize = imageSize * scale;
-      
-      // Center the image and apply crop offsets
-      const drawX = centerX - (scaledSize / 2) + (x * scale);
-      const drawY = centerY - (scaledSize / 2) + (y * scale);
-      
-      ctx.drawImage(img, drawX, drawY, scaledSize, scaledSize);
+      if (crop.width && crop.height) {
+        // Calculate source crop area
+        const scaleX = img.naturalWidth / 100;
+        const scaleY = img.naturalHeight / 100;
+        
+        const sourceX = crop.x * scaleX;
+        const sourceY = crop.y * scaleY;
+        const sourceWidth = crop.width * scaleX;
+        const sourceHeight = crop.height * scaleY;
+        
+        // Calculate destination size to fill circle
+        const destSize = radius * 2;
+        const destX = centerX - radius;
+        const destY = centerY - radius;
+        
+        // Draw the cropped portion
+        ctx.drawImage(
+          img,
+          sourceX,
+          sourceY,
+          sourceWidth,
+          sourceHeight,
+          destX,
+          destY,
+          destSize,
+          destSize
+        );
+      } else {
+        // Fallback: draw full image
+        const destSize = radius * 2;
+        const destX = centerX - radius;
+        const destY = centerY - radius;
+        
+        ctx.drawImage(img, destX, destY, destSize, destSize);
+      }
       
       ctx.restore();
     };
@@ -406,39 +456,98 @@ export default function WelcomeMailings() {
   const drawFooterSection = (ctx: CanvasRenderingContext2D, user: User, startY: number) => {
     let currentY = startY;
     
-    // Draw "Aramıza Hoş Geldin" section
+    // Draw "Aramıza Hoş Geldin" section with correct fonts
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 36px serif';
+    ctx.font = 'italic 500 26px "New York Extra Large"'; // Same as Turkish paragraphs
     ctx.textAlign = 'center';
     ctx.fillText(`Aramıza Hoş Geldin ${user.name}!`, 400, currentY);
     currentY += 50;
     
-    ctx.font = 'italic 32px serif';
+    ctx.fillStyle = '#CBCBCB';
+    ctx.font = 'italic 400 26px "New York Extra Large"'; // Same as English paragraphs
     ctx.fillText(`Welcome ${user.name}!`, 400, currentY);
     currentY += 80;
     
-    // Draw email section
+    // Draw email section with better centering
     if (user.email) {
       ctx.fillStyle = '#FFFFFF';
       ctx.font = '24px sans-serif';
-      ctx.textAlign = 'center';
       
-      // Email icon (simplified)
-      ctx.fillText('✉', 320, currentY);
-      ctx.fillText(user.email, 480, currentY);
+      // Calculate total width for centering
+      const emailIconWidth = 30;
+      const emailTextWidth = ctx.measureText(user.email).width;
+      const totalWidth = emailIconWidth + emailTextWidth + 20; // 20px spacing
+      const startX = 400 - totalWidth / 2;
+      
+      // Draw white line-style email icon
+      ctx.textAlign = 'left';
+      drawEmailIcon(ctx, startX, currentY);
+      ctx.fillText(user.email, startX + emailIconWidth + 20, currentY);
       currentY += 50;
     }
     
-    // Draw phone section
+    // Draw phone section with better centering
     if (user.mobile_phone_1) {
       ctx.fillStyle = '#FFFFFF';
       ctx.font = '24px sans-serif';
-      ctx.textAlign = 'center';
       
-      // Phone icon (simplified)
-      ctx.fillText('📞', 320, currentY);
-      ctx.fillText(user.mobile_phone_1, 480, currentY);
+      // Calculate total width for centering
+      const phoneIconWidth = 30;
+      const phoneTextWidth = ctx.measureText(user.mobile_phone_1).width;
+      const totalWidth = phoneIconWidth + phoneTextWidth + 20; // 20px spacing
+      const startX = 400 - totalWidth / 2;
+      
+      // Draw white line-style phone icon
+      ctx.textAlign = 'left';
+      drawPhoneIcon(ctx, startX, currentY);
+      ctx.fillText(user.mobile_phone_1, startX + phoneIconWidth + 20, currentY);
     }
+  };
+
+  const drawEmailIcon = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    
+    // Draw envelope outline
+    const width = 24;
+    const height = 16;
+    const centerY = y - height / 2;
+    
+    // Envelope rectangle
+    ctx.rect(x, centerY, width, height);
+    
+    // Envelope flap
+    ctx.moveTo(x, centerY);
+    ctx.lineTo(x + width / 2, centerY + height * 0.6);
+    ctx.lineTo(x + width, centerY);
+    
+    ctx.stroke();
+  };
+
+  const drawPhoneIcon = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    
+    // Draw phone outline
+    const width = 16;
+    const height = 24;
+    const centerY = y - height / 2;
+    const radius = 3;
+    
+    // Phone body with rounded corners
+    ctx.roundRect(x + 4, centerY, width, height, radius);
+    
+    // Speaker
+    ctx.moveTo(x + 8, centerY + 3);
+    ctx.lineTo(x + 12, centerY + 3);
+    
+    // Home button
+    ctx.moveTo(x + 11, centerY + height - 4);
+    ctx.arc(x + 12, centerY + height - 4, 1, 0, 2 * Math.PI);
+    
+    ctx.stroke();
   };
 
   const drawUserNameBox = (ctx: CanvasRenderingContext2D, name: string, centerX: number, y: number) => {
@@ -664,14 +773,11 @@ export default function WelcomeMailings() {
                     
                     {mailingData.userImage && (
                       <div className="flex items-center space-x-4">
-                        <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200">
+                        <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 relative">
                           <img 
-                            src={mailingData.userImage} 
-                            alt="User" 
+                            src={mailingData.userImage}
+                            alt="Preview" 
                             className="w-full h-full object-cover"
-                            style={{
-                              transform: `translate(${mailingData.cropSettings.x}px, ${mailingData.cropSettings.y}px) scale(${mailingData.cropSettings.scale})`
-                            }}
                           />
                         </div>
                         <Button 
@@ -793,66 +899,32 @@ export default function WelcomeMailings() {
       {/* Crop Modal */}
       {showCropModal && uploadedImage && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Fotoğrafı Konumlandır</h3>
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Fotoğrafı Kırp ve Konumlandır</h3>
             
             <div className="mb-4">
-              <div className="w-64 h-64 mx-auto rounded-full overflow-hidden border-2 border-gray-300 relative">
-                <img 
+              <ReactCrop
+                crop={crop}
+                onChange={(c) => setCrop(c)}
+                onComplete={(c) => setCompletedCrop(c)}
+                aspect={1}
+                circularCrop
+              >
+                <img
+                  ref={imgRef}
                   src={uploadedImage}
-                  alt="Crop preview"
-                  className="absolute inset-0 w-full h-full object-cover"
-                  style={{
-                    transform: `translate(${cropPosition.x}px, ${cropPosition.y}px) scale(${cropScale})`
-                  }}
+                  alt="Crop"
+                  onLoad={onImageLoad}
+                  style={{ maxWidth: '100%', maxHeight: '400px' }}
                 />
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <Label>Yatay Konum</Label>
-                <input
-                  type="range"
-                  min="-100"
-                  max="100"
-                  value={cropPosition.x}
-                  onChange={(e) => setCropPosition(prev => ({ ...prev, x: parseInt(e.target.value) }))}
-                  className="w-full"
-                />
-              </div>
-              
-              <div>
-                <Label>Dikey Konum</Label>
-                <input
-                  type="range"
-                  min="-100"
-                  max="100"
-                  value={cropPosition.y}
-                  onChange={(e) => setCropPosition(prev => ({ ...prev, y: parseInt(e.target.value) }))}
-                  className="w-full"
-                />
-              </div>
-              
-              <div>
-                <Label>Büyütme</Label>
-                <input
-                  type="range"
-                  min="0.5"
-                  max="3"
-                  step="0.1"
-                  value={cropScale}
-                  onChange={(e) => setCropScale(parseFloat(e.target.value))}
-                  className="w-full"
-                />
-              </div>
+              </ReactCrop>
             </div>
             
             <div className="flex justify-end space-x-3 mt-6">
               <Button variant="outline" onClick={() => setShowCropModal(false)}>
                 İptal
               </Button>
-              <Button onClick={applyCropSettings}>
+              <Button onClick={applyCropSettings} disabled={!completedCrop}>
                 Uygula
               </Button>
             </div>
