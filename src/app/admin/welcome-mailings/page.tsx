@@ -164,72 +164,86 @@ export default function WelcomeMailings() {
     // Set canvas size
     canvas.width = 800;
     
-    // Calculate height based on content
-    const baseHeight = 500; // Base height for header and user info
+    // Calculate height based on content - much longer for all sections
+    const baseHeight = 500; // Header height
+    const userSectionHeight = 400; // User info section
     const biographyHeight = calculateBiographyHeight(mailingData.biographyTurkish, mailingData.biographyEnglish);
-    canvas.height = baseHeight + biographyHeight;
+    const footerHeight = 200; // For welcome message and contact info
+    canvas.height = baseHeight + userSectionHeight + biographyHeight + footerHeight;
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw background gradient
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, '#4F46E5');
-    gradient.addColorStop(1, '#7C3AED');
-    ctx.fillStyle = gradient;
+    // Draw background with correct color #AF2331
+    ctx.fillStyle = '#AF2331';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Try to load and draw header image, fallback to manual drawing
+    // Try to load and draw header image (corrected filename)
     const headerImg = new Image();
     headerImg.onload = () => {
-      ctx.drawImage(headerImg, 0, 0, canvas.width, 200);
+      // Draw header image at 800x500px
+      ctx.drawImage(headerImg, 0, 0, 800, 500);
       drawMailingContent(ctx);
     };
     headerImg.onerror = () => {
-      // Fallback: draw header manually
+      console.log('Header image failed to load, using fallback');
       drawHeaderFallback(ctx);
       drawMailingContent(ctx);
     };
-    headerImg.src = '/assets/Welcome_Mail_Header.png';
+    headerImg.src = '/assets/Welcome_Mail_Hedaer.png'; // Using current filename until we fix it
     
-    // Also draw content immediately in case image doesn't load
+    // Also draw content immediately
     setTimeout(() => drawMailingContent(ctx), 100);
   };
 
   const drawHeaderFallback = (ctx: CanvasRenderingContext2D) => {
-    // Draw header background
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, 800, 200);
+    // Draw red header background to match
+    ctx.fillStyle = '#AF2331';
+    ctx.fillRect(0, 0, 800, 500);
     
-    // Draw "WELCOME" text
-    ctx.fillStyle = '#4F46E5';
-    ctx.font = 'bold 48px SF Pro Display';
+    // Draw "Welcome to forte" text as fallback
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 48px serif';
     ctx.textAlign = 'center';
-    ctx.fillText('WELCOME', 400, 100);
+    ctx.fillText('Welcome to', 400, 200);
+    ctx.font = 'bold 72px serif';
+    ctx.fillText('forte', 400, 300);
+    ctx.font = '24px serif';
+    ctx.fillText('MEETINGS & EVENTS', 400, 350);
   };
 
   const drawMailingContent = (ctx: CanvasRenderingContext2D) => {
     if (!selectedUser) return;
     
+    // User image position: 263px from top
+    const userImageY = 263;
+    
     // Draw white circle background for user image
     ctx.fillStyle = '#FFFFFF';
     ctx.beginPath();
-    ctx.arc(400, 250, 111, 0, 2 * Math.PI);
+    ctx.arc(400, userImageY, 111, 0, 2 * Math.PI); // 222px diameter = 111px radius
     ctx.fill();
     
-    // Draw user image circle
+    // Draw user image circle with proper crop settings
     if (mailingData.userImage) {
-      drawUserImageCircle(ctx, 400, 250, 111); // 222px diameter = 111px radius
+      drawUserImageCircle(ctx, 400, userImageY, 111);
     }
     
-    // Draw user name box
-    drawUserNameBox(ctx, selectedUser.name || 'Unnamed User', 400, 380);
+    // Draw user name box (below the header area)
+    const userNameY = 570; // After 500px header + some spacing
+    drawUserNameBox(ctx, selectedUser.name || 'Unnamed User', 400, userNameY);
     
     // Draw title
-    drawTitle(ctx, selectedUser.title || '', 400, 430);
+    const titleY = userNameY + 60;
+    drawTitle(ctx, selectedUser.title || '', 400, titleY);
     
-    // Draw biographies
-    drawBiographies(ctx, mailingData.biographyTurkish, mailingData.biographyEnglish, 480);
+    // Draw biographies with alternating pattern (TR-EN-TR-EN)
+    const biographyStartY = titleY + 80;
+    drawAlternatingBiographies(ctx, mailingData.biographyTurkish, mailingData.biographyEnglish, biographyStartY);
+    
+    // Draw footer section
+    const footerY = biographyStartY + calculateBiographyHeight(mailingData.biographyTurkish, mailingData.biographyEnglish) + 50;
+    drawFooterSection(ctx, selectedUser, footerY);
   };
 
   const generateStoryCanvas = () => {
@@ -275,15 +289,18 @@ export default function WelcomeMailings() {
   const drawStoryContent = (ctx: CanvasRenderingContext2D) => {
     if (!selectedUser) return;
     
+    // User image position: 710px from top
+    const userImageY = 710;
+    
     // Draw white circle background for user image (384px diameter = 192px radius)
     ctx.fillStyle = '#FFFFFF';
     ctx.beginPath();
-    ctx.arc(540, 500, 192, 0, 2 * Math.PI);
+    ctx.arc(540, userImageY, 192, 0, 2 * Math.PI);
     ctx.fill();
     
-    // Draw user image circle
+    // Draw user image circle with proper crop settings
     if (mailingData.userImage) {
-      drawUserImageCircle(ctx, 540, 500, 192);
+      drawUserImageCircle(ctx, 540, userImageY, 192);
     }
     
     // Draw white rounded background for user name
@@ -292,8 +309,9 @@ export default function WelcomeMailings() {
     const textWidth = ctx.measureText(nameText).width;
     const boxWidth = textWidth + 80; // 40px padding on each side
     const boxHeight = 70;
+    const nameY = userImageY + 250; // Below the user image
     const boxX = 540 - boxWidth / 2;
-    const boxY = 750 - boxHeight / 2;
+    const boxY = nameY - boxHeight / 2;
     
     // Draw white rounded rectangle
     ctx.fillStyle = '#FFFFFF';
@@ -305,12 +323,12 @@ export default function WelcomeMailings() {
     ctx.fillStyle = '#C6162A';
     ctx.font = 'bold 48px SF Pro Display';
     ctx.textAlign = 'center';
-    ctx.fillText(nameText, 540, 750 + 15); // +15 for vertical centering
+    ctx.fillText(nameText, 540, nameY + 15); // +15 for vertical centering
     
     // Draw title below the name box
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '36px SF Pro Display';
-    ctx.fillText(selectedUser.title || '', 540, 850);
+    ctx.fillText(selectedUser.title || '', 540, nameY + 100);
   };
 
   const drawUserImageCircle = (ctx: CanvasRenderingContext2D, centerX: number, centerY: number, radius: number) => {
@@ -325,22 +343,102 @@ export default function WelcomeMailings() {
       ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
       ctx.clip();
       
-      // Apply crop settings and draw image
+      // Apply crop settings and draw image properly
       const { x, y, scale } = mailingData.cropSettings;
-      const scaledWidth = img.width * scale;
-      const scaledHeight = img.height * scale;
       
-      ctx.drawImage(
-        img,
-        centerX - radius + x,
-        centerY - radius + y,
-        scaledWidth,
-        scaledHeight
-      );
+      // Calculate image dimensions to fill the circle
+      const imageSize = radius * 2;
+      const scaledSize = imageSize * scale;
+      
+      // Center the image and apply crop offsets
+      const drawX = centerX - (scaledSize / 2) + (x * scale);
+      const drawY = centerY - (scaledSize / 2) + (y * scale);
+      
+      ctx.drawImage(img, drawX, drawY, scaledSize, scaledSize);
       
       ctx.restore();
     };
     img.src = mailingData.userImage;
+  };
+
+  const drawAlternatingBiographies = (ctx: CanvasRenderingContext2D, turkishBio: string, englishBio: string, startY: number) => {
+    let currentY = startY;
+    const lineHeight = 35;
+    const paragraphSpacing = 30;
+    
+    // Split biographies into sentences/paragraphs
+    const turkishParagraphs = turkishBio.split('.').filter(p => p.trim().length > 0);
+    const englishParagraphs = englishBio.split('.').filter(p => p.trim().length > 0);
+    
+    const maxParagraphs = Math.max(turkishParagraphs.length, englishParagraphs.length);
+    
+    for (let i = 0; i < maxParagraphs; i++) {
+      // Draw Turkish paragraph if exists
+      if (i < turkishParagraphs.length) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'italic 500 26px "New York Extra Large"';
+        ctx.textAlign = 'center';
+        const turkishText = turkishParagraphs[i].trim() + '.';
+        const turkishLines = wrapText(ctx, turkishText, 740);
+        turkishLines.forEach(line => {
+          ctx.fillText(line, 400, currentY);
+          currentY += lineHeight;
+        });
+        currentY += paragraphSpacing;
+      }
+      
+      // Draw English paragraph if exists
+      if (i < englishParagraphs.length) {
+        ctx.fillStyle = '#CBCBCB';
+        ctx.font = 'italic 400 26px "New York Extra Large"';
+        ctx.textAlign = 'center';
+        const englishText = englishParagraphs[i].trim() + '.';
+        const englishLines = wrapText(ctx, englishText, 740);
+        englishLines.forEach(line => {
+          ctx.fillText(line, 400, currentY);
+          currentY += lineHeight;
+        });
+        currentY += paragraphSpacing;
+      }
+    }
+  };
+
+  const drawFooterSection = (ctx: CanvasRenderingContext2D, user: User, startY: number) => {
+    let currentY = startY;
+    
+    // Draw "Aramıza Hoş Geldin" section
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 36px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Aramıza Hoş Geldin ${user.name}!`, 400, currentY);
+    currentY += 50;
+    
+    ctx.font = 'italic 32px serif';
+    ctx.fillText(`Welcome ${user.name}!`, 400, currentY);
+    currentY += 80;
+    
+    // Draw email section
+    if (user.email) {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '24px sans-serif';
+      ctx.textAlign = 'center';
+      
+      // Email icon (simplified)
+      ctx.fillText('✉', 320, currentY);
+      ctx.fillText(user.email, 480, currentY);
+      currentY += 50;
+    }
+    
+    // Draw phone section
+    if (user.mobile_phone_1) {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '24px sans-serif';
+      ctx.textAlign = 'center';
+      
+      // Phone icon (simplified)
+      ctx.fillText('📞', 320, currentY);
+      ctx.fillText(user.mobile_phone_1, 480, currentY);
+    }
   };
 
   const drawUserNameBox = (ctx: CanvasRenderingContext2D, name: string, centerX: number, y: number) => {
@@ -364,34 +462,6 @@ export default function WelcomeMailings() {
     ctx.fillText(title, centerX, y);
   };
 
-  const drawBiographies = (ctx: CanvasRenderingContext2D, turkishBio: string, englishBio: string, startY: number) => {
-    let currentY = startY;
-    
-    // Draw Turkish biography
-    if (turkishBio) {
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'italic 26px New York Extra Large';
-      ctx.textAlign = 'center';
-      const turkishLines = wrapText(ctx, turkishBio, 740);
-      turkishLines.forEach(line => {
-        ctx.fillText(line, 400, currentY);
-        currentY += 35;
-      });
-      currentY += 20; // Space between paragraphs
-    }
-    
-    // Draw English biography
-    if (englishBio) {
-      ctx.fillStyle = '#CBCBCB';
-      ctx.font = 'italic 26px New York Extra Large';
-      ctx.textAlign = 'center';
-      const englishLines = wrapText(ctx, englishBio, 740);
-      englishLines.forEach(line => {
-        ctx.fillText(line, 400, currentY);
-        currentY += 35;
-      });
-    }
-  };
 
   const wrapText = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] => {
     const words = text.split(' ');
@@ -413,12 +483,29 @@ export default function WelcomeMailings() {
   };
 
   const calculateBiographyHeight = (turkishBio: string, englishBio: string): number => {
-    // Rough calculation - in real implementation, you'd measure text properly
+    // Improved calculation for alternating paragraphs
     const avgCharsPerLine = 80;
     const lineHeight = 35;
-    const turkishLines = Math.ceil(turkishBio.length / avgCharsPerLine);
-    const englishLines = Math.ceil(englishBio.length / avgCharsPerLine);
-    return (turkishLines + englishLines) * lineHeight + 100; // Extra padding
+    const paragraphSpacing = 30;
+    
+    const turkishParagraphs = turkishBio.split('.').filter(p => p.trim().length > 0);
+    const englishParagraphs = englishBio.split('.').filter(p => p.trim().length > 0);
+    
+    let totalHeight = 0;
+    const maxParagraphs = Math.max(turkishParagraphs.length, englishParagraphs.length);
+    
+    for (let i = 0; i < maxParagraphs; i++) {
+      if (i < turkishParagraphs.length) {
+        const turkishLines = Math.ceil(turkishParagraphs[i].length / avgCharsPerLine);
+        totalHeight += turkishLines * lineHeight + paragraphSpacing;
+      }
+      if (i < englishParagraphs.length) {
+        const englishLines = Math.ceil(englishParagraphs[i].length / avgCharsPerLine);
+        totalHeight += englishLines * lineHeight + paragraphSpacing;
+      }
+    }
+    
+    return totalHeight + 100; // Extra padding
   };
 
   const downloadCanvas = (canvas: HTMLCanvasElement, filename: string) => {
