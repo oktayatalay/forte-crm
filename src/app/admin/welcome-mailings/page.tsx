@@ -194,6 +194,16 @@ export default function WelcomeMailings() {
     }
   };
 
+  const calculateFooterHeight = (user: User): number => {
+    // Calculate actual footer height
+    let height = 0;
+    height += 50; // "Aramıza Hoş Geldin" line
+    height += 40; // "Welcome" line + reduced spacing
+    if (user.email) height += 50; // Email line
+    if (user.mobile_phone_1) height += 30; // Phone line
+    return height;
+  };
+
   const generateMailingCanvas = async () => {
     const canvas = mailingCanvasRef.current;
     if (!canvas || !selectedUser) return;
@@ -201,12 +211,12 @@ export default function WelcomeMailings() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // First, calculate needed height
+    // Calculate exact needed height
     const baseHeight = 500; // Header height
     const userSectionHeight = 400; // User info section  
     const biographyHeight = calculateBiographyHeight(mailingData.biographyTurkish, mailingData.biographyEnglish);
-    const footerHeight = 150; // Estimated footer height
-    const totalHeight = baseHeight + userSectionHeight + biographyHeight + footerHeight + 40; // 40px final padding
+    const footerHeight = calculateFooterHeight(selectedUser);
+    const totalHeight = baseHeight + userSectionHeight + biographyHeight + 20 + footerHeight + 40; // +20 for spacing before footer, +40 final padding
 
     // Set canvas size
     canvas.width = 800;
@@ -601,17 +611,26 @@ export default function WelcomeMailings() {
   };
 
   const drawUserNameBox = (ctx: CanvasRenderingContext2D, name: string, centerX: number, y: number) => {
-    // Draw white rounded rectangle background
+    // Set font and measure text to calculate dynamic width
+    ctx.font = 'bold 24px SF Pro Display';
+    const textWidth = ctx.measureText(name).width;
+    
+    // Calculate box dimensions with 40px horizontal padding (20px each side) and 10px vertical padding
+    const boxWidth = textWidth + 80; // 40px padding on each side
+    const boxHeight = 44; // Text height + 20px vertical padding (10px top + 10px bottom)
+    const boxX = centerX - boxWidth / 2;
+    const boxY = y - boxHeight / 2;
+    
+    // Draw white rounded rectangle background with 25px border radius
     ctx.fillStyle = '#FFFFFF';
     ctx.beginPath();
-    ctx.roundRect(centerX - 150, y - 25, 300, 50, 25);
+    ctx.roundRect(boxX, boxY, boxWidth, boxHeight, 25);
     ctx.fill();
     
     // Draw name text
     ctx.fillStyle = '#C6162A';
-    ctx.font = 'bold 24px SF Pro Display';
     ctx.textAlign = 'center';
-    ctx.fillText(name, centerX, y + 5);
+    ctx.fillText(name, centerX, y + 6); // Slight adjustment for vertical centering
   };
 
   const drawTitle = (ctx: CanvasRenderingContext2D, title: string, centerX: number, y: number) => {
