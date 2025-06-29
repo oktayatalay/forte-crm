@@ -178,7 +178,7 @@ export default function WelcomeMailings() {
     }
   };
 
-  const generateMailingCanvas = () => {
+  const generateMailingCanvas = async () => {
     const canvas = mailingCanvasRef.current;
     if (!canvas || !selectedUser) return;
 
@@ -204,20 +204,23 @@ export default function WelcomeMailings() {
 
     // Try to load and draw header image (corrected filename)
     const headerImg = new Image();
-    headerImg.onload = () => {
-      // Draw header image at 800x500px
-      ctx.drawImage(headerImg, 0, 0, 800, 500);
-      drawMailingContent(ctx);
-    };
-    headerImg.onerror = () => {
-      console.log('Header image failed to load, using fallback');
-      drawHeaderFallback(ctx);
-      drawMailingContent(ctx);
-    };
-    headerImg.src = '/assets/Welcome_Mail_Hedaer.png'; // Using current filename until we fix it
+    const headerLoaded = new Promise<void>((resolve) => {
+      headerImg.onload = () => {
+        // Draw header image at 800x500px
+        ctx.drawImage(headerImg, 0, 0, 800, 500);
+        resolve();
+      };
+      headerImg.onerror = () => {
+        console.log('Header image failed to load, using fallback');
+        drawHeaderFallback(ctx);
+        resolve();
+      };
+      headerImg.src = '/assets/Welcome_Mail_Hedaer.png';
+    });
     
-    // Also draw content immediately
-    setTimeout(() => drawMailingContent(ctx), 100);
+    // Wait for header to load, then draw content once
+    await headerLoaded;
+    await drawMailingContent(ctx);
   };
 
   const drawHeaderFallback = (ctx: CanvasRenderingContext2D) => {
@@ -236,7 +239,7 @@ export default function WelcomeMailings() {
     ctx.fillText('MEETINGS & EVENTS', 400, 350);
   };
 
-  const drawMailingContent = (ctx: CanvasRenderingContext2D) => {
+  const drawMailingContent = async (ctx: CanvasRenderingContext2D) => {
     if (!selectedUser) return;
     
     // User image position: 374px from top
@@ -250,7 +253,7 @@ export default function WelcomeMailings() {
     
     // Draw user image circle with proper crop settings
     if (mailingData.userImage) {
-      drawUserImageCircle(ctx, 400, userImageY, 111);
+      await drawUserImageCircle(ctx, 400, userImageY, 111);
     }
     
     // Draw user name box (below the header area)
@@ -270,7 +273,7 @@ export default function WelcomeMailings() {
     drawFooterSection(ctx, selectedUser, footerY);
   };
 
-  const generateStoryCanvas = () => {
+  const generateStoryCanvas = async () => {
     const canvas = storyCanvasRef.current;
     if (!canvas || !selectedUser) return;
 
@@ -286,19 +289,22 @@ export default function WelcomeMailings() {
 
     // Load and draw story background
     const bgImg = new Image();
-    bgImg.onload = () => {
-      ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-      drawStoryContent(ctx);
-    };
-    bgImg.onerror = () => {
-      // Fallback: draw background manually
-      drawStoryBackgroundFallback(ctx);
-      drawStoryContent(ctx);
-    };
-    bgImg.src = '/assets/Story_BG.png';
+    const bgLoaded = new Promise<void>((resolve) => {
+      bgImg.onload = () => {
+        ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+        resolve();
+      };
+      bgImg.onerror = () => {
+        // Fallback: draw background manually
+        drawStoryBackgroundFallback(ctx);
+        resolve();
+      };
+      bgImg.src = '/assets/Story_BG.png';
+    });
     
-    // Also draw content immediately in case image doesn't load
-    setTimeout(() => drawStoryContent(ctx), 100);
+    // Wait for background to load, then draw content once
+    await bgLoaded;
+    await drawStoryContent(ctx);
   };
 
   const drawStoryBackgroundFallback = (ctx: CanvasRenderingContext2D) => {
@@ -310,7 +316,7 @@ export default function WelcomeMailings() {
     ctx.fillRect(0, 0, 1080, 1920);
   };
 
-  const drawStoryContent = (ctx: CanvasRenderingContext2D) => {
+  const drawStoryContent = async (ctx: CanvasRenderingContext2D) => {
     if (!selectedUser) return;
     
     // User image position: 902px from top
@@ -324,7 +330,7 @@ export default function WelcomeMailings() {
     
     // Draw user image circle with proper crop settings
     if (mailingData.userImage) {
-      drawUserImageCircle(ctx, 540, userImageY, 192);
+      await drawUserImageCircle(ctx, 540, userImageY, 192);
     }
     
     // Draw white rounded background for user name
@@ -355,65 +361,69 @@ export default function WelcomeMailings() {
     ctx.fillText(selectedUser.title || '', 540, nameY + 100);
   };
 
-  const drawUserImageCircle = (ctx: CanvasRenderingContext2D, centerX: number, centerY: number, radius: number) => {
+  const drawUserImageCircle = async (ctx: CanvasRenderingContext2D, centerX: number, centerY: number, radius: number) => {
     if (!mailingData.userImage) return;
 
-    const img = new Image();
-    img.crossOrigin = 'anonymous'; // Handle CORS
-    img.onload = () => {
-      ctx.save();
+    return new Promise<void>((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
       
-      // Create circular clip
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-      ctx.clip();
+      img.onload = () => {
+        ctx.save();
+        
+        // Create circular clip
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.clip();
+        
+        // Apply ReactCrop settings
+        const crop = mailingData.cropSettings;
+        
+        if (crop.width && crop.height) {
+          // Calculate source crop area
+          const scaleX = img.naturalWidth / 100;
+          const scaleY = img.naturalHeight / 100;
+          
+          const sourceX = crop.x * scaleX;
+          const sourceY = crop.y * scaleY;
+          const sourceWidth = crop.width * scaleX;
+          const sourceHeight = crop.height * scaleY;
+          
+          // Calculate destination size to fill circle
+          const destSize = radius * 2;
+          const destX = centerX - radius;
+          const destY = centerY - radius;
+          
+          // Draw the cropped portion
+          ctx.drawImage(
+            img,
+            sourceX,
+            sourceY,
+            sourceWidth,
+            sourceHeight,
+            destX,
+            destY,
+            destSize,
+            destSize
+          );
+        } else {
+          // Fallback: draw full image
+          const destSize = radius * 2;
+          const destX = centerX - radius;
+          const destY = centerY - radius;
+          
+          ctx.drawImage(img, destX, destY, destSize, destSize);
+        }
+        
+        ctx.restore();
+        resolve();
+      };
       
-      // Apply ReactCrop settings
-      const crop = mailingData.cropSettings;
-      
-      if (crop.width && crop.height) {
-        // Calculate source crop area
-        const scaleX = img.naturalWidth / 100;
-        const scaleY = img.naturalHeight / 100;
-        
-        const sourceX = crop.x * scaleX;
-        const sourceY = crop.y * scaleY;
-        const sourceWidth = crop.width * scaleX;
-        const sourceHeight = crop.height * scaleY;
-        
-        // Calculate destination size to fill circle
-        const destSize = radius * 2;
-        const destX = centerX - radius;
-        const destY = centerY - radius;
-        
-        // Draw the cropped portion
-        ctx.drawImage(
-          img,
-          sourceX,
-          sourceY,
-          sourceWidth,
-          sourceHeight,
-          destX,
-          destY,
-          destSize,
-          destSize
-        );
-      } else {
-        // Fallback: draw full image
-        const destSize = radius * 2;
-        const destX = centerX - radius;
-        const destY = centerY - radius;
-        
-        ctx.drawImage(img, destX, destY, destSize, destSize);
+      img.onerror = () => resolve(); // Continue even if image fails
+      if (mailingData.userImage) {
+        img.src = mailingData.userImage;
       }
-      
-      ctx.restore();
-      
-      // Trigger canvas re-render after image loads
-      generateMailingCanvas();
-      generateStoryCanvas();
-    };
-    img.src = mailingData.userImage;
+    });
   };
 
   const drawAlternatingBiographies = (ctx: CanvasRenderingContext2D, turkishBio: string, englishBio: string, startY: number) => {
@@ -640,8 +650,11 @@ export default function WelcomeMailings() {
   // Generate canvases when data changes
   useEffect(() => {
     if (selectedUser && mailingData.biographyTurkish && mailingData.biographyEnglish) {
-      generateMailingCanvas();
-      generateStoryCanvas();
+      const generateCanvases = async () => {
+        await generateMailingCanvas();
+        await generateStoryCanvas();
+      };
+      generateCanvases();
     }
   }, [selectedUser, mailingData]);
 
