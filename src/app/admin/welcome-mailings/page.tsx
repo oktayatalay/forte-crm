@@ -179,26 +179,57 @@ export default function WelcomeMailings() {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Load and draw header image (placeholder for now)
+    // Try to load and draw header image, fallback to manual drawing
     const headerImg = new Image();
     headerImg.onload = () => {
       ctx.drawImage(headerImg, 0, 0, canvas.width, 200);
-      
-      // Draw user image circle
-      if (mailingData.userImage) {
-        drawUserImageCircle(ctx, 400, 150, 111); // 222px diameter = 111px radius
-      }
-      
-      // Draw user name box
-      drawUserNameBox(ctx, selectedUser.name || 'Unnamed User', 400, 280);
-      
-      // Draw title
-      drawTitle(ctx, selectedUser.title || '', 400, 320);
-      
-      // Draw biographies
-      drawBiographies(ctx, mailingData.biographyTurkish, mailingData.biographyEnglish, 360);
+      drawMailingContent(ctx);
     };
-    headerImg.src = '/assets/Welcome_Mail_Header.png'; // You'll need to add this image
+    headerImg.onerror = () => {
+      // Fallback: draw header manually
+      drawHeaderFallback(ctx);
+      drawMailingContent(ctx);
+    };
+    headerImg.src = '/assets/Welcome_Mail_Header.png';
+    
+    // Also draw content immediately in case image doesn't load
+    setTimeout(() => drawMailingContent(ctx), 100);
+  };
+
+  const drawHeaderFallback = (ctx: CanvasRenderingContext2D) => {
+    // Draw header background
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, 800, 200);
+    
+    // Draw "WELCOME" text
+    ctx.fillStyle = '#4F46E5';
+    ctx.font = 'bold 48px SF Pro Display';
+    ctx.textAlign = 'center';
+    ctx.fillText('WELCOME', 400, 100);
+  };
+
+  const drawMailingContent = (ctx: CanvasRenderingContext2D) => {
+    if (!selectedUser) return;
+    
+    // Draw white circle background for user image
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(400, 250, 111, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Draw user image circle
+    if (mailingData.userImage) {
+      drawUserImageCircle(ctx, 400, 250, 111); // 222px diameter = 111px radius
+    }
+    
+    // Draw user name box
+    drawUserNameBox(ctx, selectedUser.name || 'Unnamed User', 400, 380);
+    
+    // Draw title
+    drawTitle(ctx, selectedUser.title || '', 400, 430);
+    
+    // Draw biographies
+    drawBiographies(ctx, mailingData.biographyTurkish, mailingData.biographyEnglish, 480);
   };
 
   const generateStoryCanvas = () => {
@@ -219,24 +250,67 @@ export default function WelcomeMailings() {
     const bgImg = new Image();
     bgImg.onload = () => {
       ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-      
-      // Draw user image circle (384px diameter = 192px radius)
-      if (mailingData.userImage) {
-        drawUserImageCircle(ctx, 540, 500, 192);
-      }
-      
-      // Draw user name
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 48px SF Pro Display';
-      ctx.textAlign = 'center';
-      ctx.fillText(selectedUser.name || 'Unnamed User', 540, 750);
-      
-      // Draw title
-      ctx.fillStyle = '#CBCBCB';
-      ctx.font = '36px SF Pro Display';
-      ctx.fillText(selectedUser.title || '', 540, 800);
+      drawStoryContent(ctx);
     };
-    bgImg.src = '/assets/Story_BG.png'; // You'll need to add this image
+    bgImg.onerror = () => {
+      // Fallback: draw background manually
+      drawStoryBackgroundFallback(ctx);
+      drawStoryContent(ctx);
+    };
+    bgImg.src = '/assets/Story_BG.png';
+    
+    // Also draw content immediately in case image doesn't load
+    setTimeout(() => drawStoryContent(ctx), 100);
+  };
+
+  const drawStoryBackgroundFallback = (ctx: CanvasRenderingContext2D) => {
+    // Draw red gradient background as fallback
+    const gradient = ctx.createLinearGradient(0, 0, 0, 1920);
+    gradient.addColorStop(0, '#DC2626');
+    gradient.addColorStop(1, '#991B1B');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 1080, 1920);
+  };
+
+  const drawStoryContent = (ctx: CanvasRenderingContext2D) => {
+    if (!selectedUser) return;
+    
+    // Draw white circle background for user image (384px diameter = 192px radius)
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(540, 500, 192, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Draw user image circle
+    if (mailingData.userImage) {
+      drawUserImageCircle(ctx, 540, 500, 192);
+    }
+    
+    // Draw white rounded background for user name
+    const nameText = selectedUser.name || 'Unnamed User';
+    ctx.font = 'bold 48px SF Pro Display';
+    const textWidth = ctx.measureText(nameText).width;
+    const boxWidth = textWidth + 80; // 40px padding on each side
+    const boxHeight = 70;
+    const boxX = 540 - boxWidth / 2;
+    const boxY = 750 - boxHeight / 2;
+    
+    // Draw white rounded rectangle
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.roundRect(boxX, boxY, boxWidth, boxHeight, 35);
+    ctx.fill();
+    
+    // Draw user name with correct color #C6162A
+    ctx.fillStyle = '#C6162A';
+    ctx.font = 'bold 48px SF Pro Display';
+    ctx.textAlign = 'center';
+    ctx.fillText(nameText, 540, 750 + 15); // +15 for vertical centering
+    
+    // Draw title below the name box
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '36px SF Pro Display';
+    ctx.fillText(selectedUser.title || '', 540, 850);
   };
 
   const drawUserImageCircle = (ctx: CanvasRenderingContext2D, centerX: number, centerY: number, radius: number) => {
