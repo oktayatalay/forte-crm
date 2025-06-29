@@ -266,10 +266,10 @@ export default function WelcomeMailings() {
     
     // Draw biographies with alternating pattern (TR-EN-TR-EN)
     const biographyStartY = titleY + 80;
-    drawAlternatingBiographies(ctx, mailingData.biographyTurkish, mailingData.biographyEnglish, biographyStartY);
+    const biographyEndY = drawAlternatingBiographies(ctx, mailingData.biographyTurkish, mailingData.biographyEnglish, biographyStartY);
     
-    // Draw footer section
-    const footerY = biographyStartY + calculateBiographyHeight(mailingData.biographyTurkish, mailingData.biographyEnglish) + 50;
+    // Draw footer section right after biography with minimal spacing
+    const footerY = biographyEndY + 20; // Just 20px padding as requested
     drawFooterSection(ctx, selectedUser, footerY);
   };
 
@@ -379,15 +379,12 @@ export default function WelcomeMailings() {
         // Apply ReactCrop settings
         const crop = mailingData.cropSettings;
         
-        if (crop.width && crop.height) {
-          // Calculate source crop area
-          const scaleX = img.naturalWidth / 100;
-          const scaleY = img.naturalHeight / 100;
-          
-          const sourceX = crop.x * scaleX;
-          const sourceY = crop.y * scaleY;
-          const sourceWidth = crop.width * scaleX;
-          const sourceHeight = crop.height * scaleY;
+        if (crop.width && crop.height && crop.unit === '%') {
+          // Calculate source crop area from percentage
+          const sourceX = (crop.x / 100) * img.naturalWidth;
+          const sourceY = (crop.y / 100) * img.naturalHeight;
+          const sourceWidth = (crop.width / 100) * img.naturalWidth;
+          const sourceHeight = (crop.height / 100) * img.naturalHeight;
           
           // Calculate destination size to fill circle
           const destSize = radius * 2;
@@ -426,7 +423,7 @@ export default function WelcomeMailings() {
     });
   };
 
-  const drawAlternatingBiographies = (ctx: CanvasRenderingContext2D, turkishBio: string, englishBio: string, startY: number) => {
+  const drawAlternatingBiographies = (ctx: CanvasRenderingContext2D, turkishBio: string, englishBio: string, startY: number): number => {
     let currentY = startY;
     const lineHeight = 35;
     const paragraphSpacing = 30;
@@ -466,6 +463,8 @@ export default function WelcomeMailings() {
         currentY += paragraphSpacing;
       }
     }
+    
+    return currentY; // Return the final Y position
   };
 
   const drawFooterSection = (ctx: CanvasRenderingContext2D, user: User, startY: number) => {
@@ -794,10 +793,31 @@ export default function WelcomeMailings() {
                     {mailingData.userImage && (
                       <div className="flex items-center space-x-4">
                         <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 relative">
-                          <img 
-                            src={mailingData.userImage}
-                            alt="Preview" 
-                            className="w-full h-full object-cover"
+                          <canvas 
+                            ref={(canvas) => {
+                              if (canvas && mailingData.userImage) {
+                                const ctx = canvas.getContext('2d');
+                                if (ctx) {
+                                  canvas.width = 96;
+                                  canvas.height = 96;
+                                  const img = new Image();
+                                  img.onload = () => {
+                                    const crop = mailingData.cropSettings;
+                                    if (crop.width && crop.height && crop.unit === '%') {
+                                      const sourceX = (crop.x / 100) * img.naturalWidth;
+                                      const sourceY = (crop.y / 100) * img.naturalHeight;
+                                      const sourceWidth = (crop.width / 100) * img.naturalWidth;
+                                      const sourceHeight = (crop.height / 100) * img.naturalHeight;
+                                      ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, 96, 96);
+                                    } else {
+                                      ctx.drawImage(img, 0, 0, 96, 96);
+                                    }
+                                  };
+                                  img.src = mailingData.userImage;
+                                }
+                              }
+                            }}
+                            className="w-full h-full rounded-full"
                           />
                         </div>
                         <Button 
