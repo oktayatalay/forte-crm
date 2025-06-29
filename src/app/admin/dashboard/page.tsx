@@ -313,6 +313,29 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
+            {/* Welcome Mailings */}
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-green-200">
+              <CardHeader>
+                <CardTitle className="flex items-center text-green-600">
+                  <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  Welcome Mailings
+                </CardTitle>
+                <CardDescription>
+                  Yeni kullanıcılar için hoş geldin e-postalarını yönet
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  onClick={() => window.location.href = '/admin/welcome-mailings'}
+                >
+                  📧 Mailings Yönet
+                </Button>
+              </CardContent>
+            </Card>
+
             {/* Back to User Panel */}
             <Card className="hover:shadow-lg transition-shadow cursor-pointer border-blue-200">
               <CardHeader>
