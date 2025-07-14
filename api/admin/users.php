@@ -64,6 +64,7 @@ try {
                     u.birth_date,
                     u.city,
                     u.address,
+                    u.user_image,
                     u.created_at
                 FROM users u
                 LEFT JOIN departments d ON u.department_id = d.id

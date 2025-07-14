@@ -33,7 +33,7 @@ try {
     // Session'ı doğrula
     $stmt = $db->prepare("
         SELECT u.id, u.email, u.name, u.title, u.mobile_phone_1, u.mobile_phone_2, u.offices,
-               u.gender, u.birth_date, u.city, u.address, u.department_id, 
+               u.gender, u.birth_date, u.city, u.address, u.department_id, u.user_image,
                d.name as department_name, s.expires_at 
         FROM sessions s 
         JOIN users u ON s.user_id = u.id 
@@ -64,7 +64,8 @@ try {
             'city' => $result['city'],
             'address' => $result['address'],
             'department_id' => $result['department_id'],
-            'department_name' => $result['department_name']
+            'department_name' => $result['department_name'],
+            'user_image' => $result['user_image']
         ]
     ]);
     

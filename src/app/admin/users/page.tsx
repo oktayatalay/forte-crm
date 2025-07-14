@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
+import UserAvatar from '@/components/ui/user-avatar';
 
 interface User {
   id: number;
@@ -22,6 +23,7 @@ interface User {
   birth_date: string | null;
   city: string | null;
   address: string | null;
+  user_image: string | null;
   created_at: string | null;
 }
 
@@ -958,16 +960,7 @@ export default function UserManagement() {
                 {paginatedUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-4">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mr-3">
-                          <span className="text-white font-medium text-sm">
-                            {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {user.name || 'Unnamed User'}
-                        </div>
-                      </div>
+                      <UserAvatar user={user} size="md" showName={true} />
                     </td>
                     <td className="px-4 py-4">
                       <div className="text-sm text-gray-600">

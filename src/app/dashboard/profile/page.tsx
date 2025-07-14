@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import UserPhotoUpload from '@/components/ui/user-photo-upload';
 
 interface User {
   id: number;
@@ -22,6 +23,7 @@ interface User {
   address: string | null;
   department_id: number | null;
   department_name: string | null;
+  user_image: string | null;
 }
 
 export default function ProfilePage() {
@@ -238,6 +240,47 @@ export default function ProfilePage() {
           </CardHeader>
           
           <CardContent className="space-y-4">
+            
+            {/* Profile Photo */}
+            <div className="space-y-2">
+              <Label>Profil Fotoğrafı</Label>
+              <UserPhotoUpload
+                currentImage={user?.user_image}
+                onImageUpdate={async (imageData) => {
+                  try {
+                    const token = localStorage.getItem('session_token');
+                    const response = await fetch('/api/endpoints/update_user_photo.php', {
+                      method: 'POST',
+                      headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ image_data: imageData }),
+                    });
+
+                    if (response.ok) {
+                      setUser(prev => prev ? { ...prev, user_image: imageData } : null);
+                      // LocalStorage'daki user bilgilerini güncelle
+                      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                      localStorage.setItem('user', JSON.stringify({
+                        ...currentUser,
+                        user_image: imageData
+                      }));
+                    } else {
+                      const data = await response.json();
+                      toast.error(data.error || 'Fotoğraf güncellenemedi');
+                    }
+                  } catch {
+                    toast.error('Bağlantı hatası');
+                  }
+                }}
+                size="lg"
+                className="flex flex-col items-center"
+              />
+              <p className="text-sm text-gray-500">
+                Fotoğrafınız mail imzası ve diğer yerlerde kullanılacak
+              </p>
+            </div>
             
             {/* Email (Read-only) */}
             <div className="space-y-2">

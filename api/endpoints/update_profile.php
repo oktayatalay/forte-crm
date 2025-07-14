@@ -58,8 +58,14 @@ if ($department_id && !is_numeric($department_id)) {
 // Debug logging
 error_log("Received offices: " . json_encode($offices));
 
-// Offices validation
-$valid_offices = ['istanbul', 'dubai', 'athens'];
+// Offices validation - veritabanından geçerli ofisleri al
+$valid_offices = [];
+$offices_stmt = $db->prepare("SELECT code FROM offices WHERE is_active = TRUE");
+$offices_stmt->execute();
+while ($office_row = $offices_stmt->fetch(PDO::FETCH_ASSOC)) {
+    $valid_offices[] = $office_row['code'];
+}
+
 $offices = array_filter($offices, function($office) use ($valid_offices) {
     return in_array($office, $valid_offices);
 });
@@ -103,7 +109,7 @@ try {
         // Güncellenmiş kullanıcı bilgilerini getir
         $user_stmt = $db->prepare("
             SELECT u.id, u.email, u.name, u.title, u.mobile_phone_1, u.mobile_phone_2, 
-                   u.offices, u.gender, u.birth_date, u.city, u.address, u.department_id,
+                   u.offices, u.gender, u.birth_date, u.city, u.address, u.department_id, u.user_image,
                    d.name as department_name
             FROM users u
             LEFT JOIN departments d ON u.department_id = d.id
