@@ -3,8 +3,7 @@ import type { NextConfig } from "next";
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 const nextConfig: NextConfig = {
-  // Temporarily disable static export for deployment
-  // output: 'export',
+  output: 'export',
   trailingSlash: true,
   images: {
     unoptimized: true
@@ -15,13 +14,14 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', 'apexcharts', 'react-apexcharts']
   },
-  // Skip build errors for deployment
-  typescript: {
-    ignoreBuildErrors: true,
+  webpack: (config: any) => {
+    // Handle SVG imports as React components
+    config.module.rules.push({
+      test: /\.svg$/,
+      use: ['@svgr/webpack'],
+    });
+    return config;
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  }
 }
 
 export default nextConfig;
