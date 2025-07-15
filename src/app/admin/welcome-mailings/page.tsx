@@ -7,8 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
 import UserAvatar from '@/components/ui/user-avatar';
 import UserPhotoUpload from '@/components/ui/user-photo-upload';
 
@@ -767,7 +765,7 @@ export default function WelcomeMailings() {
                           }}
                           userId={selectedUser.id}
                           isAdmin={true}
-                          size="xl"
+                          size="lg"
                         />
                         <p className="text-sm text-gray-500 mt-2">
                           Bu fotoğraf hem kullanıcının profili hem de mailing için kullanılacak
