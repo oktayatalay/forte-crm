@@ -9,6 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import UserAvatar from '@/components/ui/user-avatar';
+import UserPhotoUpload from '@/components/ui/user-photo-upload';
 
 interface User {
   id: number;
@@ -24,6 +26,7 @@ interface User {
   birth_date: string | null;
   city: string | null;
   address: string | null;
+  user_image: string | null;
   created_at: string | null;
 }
 
@@ -32,7 +35,6 @@ interface WelcomeMailingData {
   userImage: string | null;
   biographyTurkish: string;
   biographyEnglish: string;
-  cropSettings: Crop;
 }
 
 export default function WelcomeMailings() {
@@ -46,27 +48,12 @@ export default function WelcomeMailings() {
     userId: 0,
     userImage: null,
     biographyTurkish: '',
-    biographyEnglish: '',
-    cropSettings: {
-      unit: '%',
-      x: 25,
-      y: 25,
-      width: 50,
-      height: 50
-    }
+    biographyEnglish: ''
   });
-
-  // Image upload and crop states
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [showCropModal, setShowCropModal] = useState(false);
-  const [crop, setCrop] = useState<Crop>();
-  const [completedCrop, setCompletedCrop] = useState<Crop>();
-  const imgRef = useRef<HTMLImageElement>(null);
 
   // Canvas refs
   const mailingCanvasRef = useRef<HTMLCanvasElement>(null);
   const storyCanvasRef = useRef<HTMLCanvasElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     verifyAdminSession();
@@ -128,71 +115,11 @@ export default function WelcomeMailings() {
     setSelectedUser(user);
     setMailingData(prev => ({
       ...prev,
-      userId: user.id
+      userId: user.id,
+      userImage: user.user_image || null
     }));
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setUploadedImage(result);
-        setShowCropModal(true);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const { width, height } = e.currentTarget;
-    
-    // Create a circular crop in the center
-    const crop = centerCrop(
-      makeAspectCrop(
-        {
-          unit: '%',
-          width: 80,
-        },
-        1, // aspect ratio for circle
-        width,
-        height,
-      ),
-      width,
-      height,
-    );
-
-    setCrop(crop);
-  };
-
-  const applyCropSettings = () => {
-    if (completedCrop && uploadedImage && imgRef.current) {
-      console.log('Applying crop settings:', completedCrop); // Debug log
-      
-      // Convert px to percentage based on image dimensions
-      const img = imgRef.current;
-      const convertedCrop = {
-        unit: '%' as const,
-        x: (completedCrop.x / img.naturalWidth) * 100,
-        y: (completedCrop.y / img.naturalHeight) * 100,
-        width: (completedCrop.width / img.naturalWidth) * 100,
-        height: (completedCrop.height / img.naturalHeight) * 100
-      };
-      
-      console.log('Converted crop to percentage:', convertedCrop); // Debug log
-      
-      setMailingData(prev => ({
-        ...prev,
-        userImage: uploadedImage,
-        cropSettings: convertedCrop
-      }));
-      setShowCropModal(false);
-      toast.success('Görsel ayarları kaydedildi');
-    } else {
-      console.log('Cannot apply crop - missing data:', { completedCrop, uploadedImage, imgRef: imgRef.current }); // Debug log
-    }
-  };
 
   const calculateFooterHeight = (user: User): number => {
     // Calculate actual footer height
@@ -403,55 +330,28 @@ export default function WelcomeMailings() {
         ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
         ctx.clip();
         
-        // Apply ReactCrop settings
-        const crop = mailingData.cropSettings;
-        console.log('Crop settings:', crop); // Debug log
+        // Draw image to fill the circle (square crop from center)
+        const imgSize = Math.min(img.naturalWidth, img.naturalHeight);
+        const sourceX = (img.naturalWidth - imgSize) / 2;
+        const sourceY = (img.naturalHeight - imgSize) / 2;
         
-        if (crop && crop.width && crop.height && crop.width > 0 && crop.height > 0) {
-          let sourceX, sourceY, sourceWidth, sourceHeight;
-          
-          if (crop.unit === '%') {
-            // Calculate source crop area from percentage
-            sourceX = (crop.x / 100) * img.naturalWidth;
-            sourceY = (crop.y / 100) * img.naturalHeight;
-            sourceWidth = (crop.width / 100) * img.naturalWidth;
-            sourceHeight = (crop.height / 100) * img.naturalHeight;
-          } else {
-            // Use px values directly
-            sourceX = crop.x;
-            sourceY = crop.y;
-            sourceWidth = crop.width;
-            sourceHeight = crop.height;
-          }
-          
-          console.log('Crop calculation:', { sourceX, sourceY, sourceWidth, sourceHeight, imgSize: { w: img.naturalWidth, h: img.naturalHeight } });
-          
-          // Calculate destination size to fill circle
-          const destSize = radius * 2;
-          const destX = centerX - radius;
-          const destY = centerY - radius;
-          
-          // Draw the cropped portion
-          ctx.drawImage(
-            img,
-            sourceX,
-            sourceY,
-            sourceWidth,
-            sourceHeight,
-            destX,
-            destY,
-            destSize,
-            destSize
-          );
-        } else {
-          console.log('Using fallback - no valid crop settings');
-          // Fallback: draw full image
-          const destSize = radius * 2;
-          const destX = centerX - radius;
-          const destY = centerY - radius;
-          
-          ctx.drawImage(img, destX, destY, destSize, destSize);
-        }
+        // Calculate destination size to fill circle
+        const destSize = radius * 2;
+        const destX = centerX - radius;
+        const destY = centerY - radius;
+        
+        // Draw the image (center cropped to square)
+        ctx.drawImage(
+          img,
+          sourceX,
+          sourceY,
+          imgSize,
+          imgSize,
+          destX,
+          destY,
+          destSize,
+          destSize
+        );
         
         ctx.restore();
         resolve();
@@ -796,11 +696,7 @@ export default function WelcomeMailings() {
                         onClick={() => handleUserSelect(user)}
                       >
                         <div className="flex items-center">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mr-3">
-                            <span className="text-white font-medium text-sm">
-                              {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
+                          <UserAvatar user={user} size="md" className="mr-3" />
                           <div>
                             <div className="font-medium text-gray-900">{user.name || 'Unnamed User'}</div>
                             <div className="text-sm text-gray-500">{user.email}</div>
@@ -827,70 +723,71 @@ export default function WelcomeMailings() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div>
-                      <Button 
-                        onClick={() => fileInputRef.current?.click()}
-                        className="mb-4"
-                      >
-                        📷 Fotoğraf Yükle
-                      </Button>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
+                    <div className="flex items-center space-x-6">
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-2">Mevcut Fotoğraf:</h4>
+                        <UserAvatar user={selectedUser} size="xl" />
+                        <p className="text-sm text-gray-500 mt-2">
+                          {selectedUser.user_image ? 'Kullanıcının profil fotoğrafı' : 'Henüz fotoğraf yüklenmemiş'}
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-2">Yeni Fotoğraf Yükle:</h4>
+                        <UserPhotoUpload
+                          currentImage={mailingData.userImage}
+                          onImageUpdate={async (imageData) => {
+                            // Update admin's photo for this user
+                            try {
+                              const token = localStorage.getItem('admin_token');
+                              const response = await fetch('/api/admin/update-user-photo.php', {
+                                method: 'POST',
+                                headers: {
+                                  'Authorization': `Bearer ${token}`,
+                                  'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                  user_id: selectedUser.id,
+                                  image_data: imageData
+                                }),
+                              });
+
+                              if (response.ok) {
+                                // Update local state
+                                setMailingData(prev => ({ ...prev, userImage: imageData }));
+                                setSelectedUser(prev => prev ? { ...prev, user_image: imageData } : null);
+                                toast.success('Fotoğraf güncellendi ve mailingde kullanılacak');
+                              } else {
+                                const data = await response.json();
+                                toast.error(data.message || 'Fotoğraf güncellenemedi');
+                              }
+                            } catch {
+                              toast.error('Bağlantı hatası');
+                            }
+                          }}
+                          userId={selectedUser.id}
+                          isAdmin={true}
+                          size="xl"
+                        />
+                        <p className="text-sm text-gray-500 mt-2">
+                          Bu fotoğraf hem kullanıcının profili hem de mailing için kullanılacak
+                        </p>
+                      </div>
                     </div>
                     
-                    {mailingData.userImage && (
-                      <div className="flex items-center space-x-4">
-                        <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 relative">
-                          <canvas 
-                            ref={(canvas) => {
-                              if (canvas && mailingData.userImage) {
-                                const ctx = canvas.getContext('2d');
-                                if (ctx) {
-                                  canvas.width = 96;
-                                  canvas.height = 96;
-                                  const img = new Image();
-                                  img.onload = () => {
-                                    const crop = mailingData.cropSettings;
-                                    if (crop.width && crop.height && crop.width > 0 && crop.height > 0) {
-                                      let sourceX, sourceY, sourceWidth, sourceHeight;
-                                      
-                                      if (crop.unit === '%') {
-                                        sourceX = (crop.x / 100) * img.naturalWidth;
-                                        sourceY = (crop.y / 100) * img.naturalHeight;
-                                        sourceWidth = (crop.width / 100) * img.naturalWidth;
-                                        sourceHeight = (crop.height / 100) * img.naturalHeight;
-                                      } else {
-                                        sourceX = crop.x;
-                                        sourceY = crop.y;
-                                        sourceWidth = crop.width;
-                                        sourceHeight = crop.height;
-                                      }
-                                      
-                                      ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, 96, 96);
-                                    } else {
-                                      ctx.drawImage(img, 0, 0, 96, 96);
-                                    }
-                                  };
-                                  img.src = mailingData.userImage;
-                                }
-                              }
-                            }}
-                            className="w-full h-full rounded-full"
-                          />
-                        </div>
-                        <Button 
-                          variant="outline"
-                          onClick={() => setShowCropModal(true)}
-                        >
-                          ✂️ Kırp ve Konumlandır
-                        </Button>
-                      </div>
-                    )}
+                    <div className="border-t pt-4">
+                      <Button 
+                        onClick={() => {
+                          // Use current user photo for mailing
+                          setMailingData(prev => ({ ...prev, userImage: selectedUser.user_image }));
+                          toast.success('Mevcut profil fotoğrafı mailing için seçildi');
+                        }}
+                        variant="outline"
+                        disabled={!selectedUser.user_image}
+                      >
+                        📷 Mevcut Profil Fotoğrafını Kullan
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -1000,40 +897,6 @@ export default function WelcomeMailings() {
       </main>
 
       {/* Crop Modal */}
-      {showCropModal && uploadedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Fotoğrafı Kırp ve Konumlandır</h3>
-            
-            <div className="mb-4">
-              <ReactCrop
-                crop={crop}
-                onChange={(c) => setCrop(c)}
-                onComplete={(c) => setCompletedCrop(c)}
-                aspect={1}
-                circularCrop
-              >
-                <img
-                  ref={imgRef}
-                  src={uploadedImage}
-                  alt="Crop"
-                  onLoad={onImageLoad}
-                  style={{ maxWidth: '100%', maxHeight: '400px' }}
-                />
-              </ReactCrop>
-            </div>
-            
-            <div className="flex justify-end space-x-3 mt-6">
-              <Button variant="outline" onClick={() => setShowCropModal(false)}>
-                İptal
-              </Button>
-              <Button onClick={applyCropSettings} disabled={!completedCrop}>
-                Uygula
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
