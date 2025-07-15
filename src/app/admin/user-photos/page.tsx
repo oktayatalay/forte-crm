@@ -153,20 +153,23 @@ export default function UserPhotos() {
       canvas.width = 600;
       canvas.height = 600;
 
-      // Calculate crop area
-      let sourceX, sourceY, sourceWidth, sourceHeight;
+      // Calculate crop area - ReactCrop provides pixel coordinates relative to displayed image
+      // We need to scale these to natural image size
+      const scaleX = img.naturalWidth / img.width;
+      const scaleY = img.naturalHeight / img.height;
       
-      if (completedCrop.unit === '%') {
-        sourceX = (completedCrop.x / 100) * img.naturalWidth;
-        sourceY = (completedCrop.y / 100) * img.naturalHeight;
-        sourceWidth = (completedCrop.width / 100) * img.naturalWidth;
-        sourceHeight = (completedCrop.height / 100) * img.naturalHeight;
-      } else {
-        sourceX = completedCrop.x;
-        sourceY = completedCrop.y;
-        sourceWidth = completedCrop.width;
-        sourceHeight = completedCrop.height;
-      }
+      const pixelCrop = {
+        x: completedCrop.x,
+        y: completedCrop.y,
+        width: completedCrop.width,
+        height: completedCrop.height
+      };
+
+      // Scale to natural image dimensions
+      const sourceX = pixelCrop.x * scaleX;
+      const sourceY = pixelCrop.y * scaleY;
+      const sourceWidth = pixelCrop.width * scaleX;
+      const sourceHeight = pixelCrop.height * scaleY;
 
       // Draw cropped image to canvas at 600x600
       ctx.drawImage(
