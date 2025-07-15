@@ -117,6 +117,68 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground relative font-normal font-sans z-1;
   }
+}
+
+/* TailAdmin Menu Styles */
+@utility menu-item {
+  @apply relative flex items-center w-full gap-3 px-3 py-2 font-medium rounded-lg text-sm;
+}
+
+@utility menu-item-active {
+  @apply bg-blue-50 text-blue-600 dark:bg-blue-500/[0.12] dark:text-blue-400;
+}
+
+@utility menu-item-inactive {
+  @apply text-gray-700 hover:bg-gray-100 group-hover:text-gray-700 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-gray-300;
+}
+
+@utility menu-item-icon {
+  @apply text-gray-500 group-hover:text-gray-700 dark:text-gray-400;
+}
+
+@utility menu-item-icon-active {
+  @apply text-blue-600 dark:text-blue-400;
+}
+
+@utility menu-item-icon-inactive {
+  @apply text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300;
+}
+
+@utility menu-item-text {
+  @apply text-sm font-medium;
+}
+
+@utility menu-dropdown-item {
+  @apply relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium;
+}
+
+@utility menu-dropdown-item-active {
+  @apply bg-blue-50 text-blue-600 dark:bg-blue-500/[0.12] dark:text-blue-400;
+}
+
+@utility menu-dropdown-item-inactive {
+  @apply text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5;
+}
+
+@utility menu-dropdown-badge {
+  @apply block rounded-full px-2.5 py-0.5 text-xs font-medium uppercase text-blue-600 dark:text-blue-400;
+}
+
+@utility menu-dropdown-badge-active {
+  @apply bg-blue-100 dark:bg-blue-500/20;
+}
+
+@utility menu-dropdown-badge-inactive {
+  @apply bg-blue-50 group-hover:bg-blue-100 dark:bg-blue-500/15 dark:group-hover:bg-blue-500/20;
+}
+
+@utility no-scrollbar {
+  /* Chrome, Safari and Opera */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
