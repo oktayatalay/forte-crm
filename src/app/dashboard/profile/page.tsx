@@ -198,39 +198,37 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p>Yükleniyor...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Yükleniyor...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => window.location.href = '/dashboard/'}
-              >
-                ← Geri
-              </Button>
-              <h1 className="text-xl font-semibold text-gray-900">Profil Düzenle</h1>
-            </div>
-            <span className="text-sm text-gray-600">{user?.email}</span>
+    <div className="space-y-8">
+      {/* Header Section */}
+      <div className="flex flex-col space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Profil Düzenle
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Mail imzası ve diğer özelliklerde kullanılacak bilgilerinizi güncelleyin
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm font-medium">{user?.email}</p>
+            <p className="text-xs text-muted-foreground">Kullanıcı hesabı</p>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
-      <main className="max-w-2xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        
+      <div className="max-w-2xl">
         <Card>
           <CardHeader>
             <CardTitle>Kişisel Bilgiler</CardTitle>
@@ -472,8 +470,7 @@ export default function ProfilePage() {
 
           </CardContent>
         </Card>
-
-      </main>
+      </div>
     </div>
   );
 }

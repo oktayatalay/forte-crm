@@ -1,11 +1,10 @@
 "use client";
 
 import React from "react";
-import { Bell, User, Settings, LogOut, Home, FileText, Mail, CreditCard, Users, Search } from "lucide-react";
+import { Bell, User, Settings, LogOut, Home, FileText, Mail, CreditCard, Users, Menu } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from "@/components/ui/navigation-menu";
 import { Badge } from "@/components/ui/badge";
@@ -71,7 +70,7 @@ export default function CorporateLayout({ children }: CorporateLayoutProps) {
     <div className="min-h-screen bg-gray-50/40">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex h-14 items-center">
+        <div className="w-full px-4 sm:px-6 lg:px-8 flex h-16 items-center">
           {/* Logo */}
           <div className="mr-4 hidden md:flex">
             <Link href="/dashboard" className="mr-6 flex items-center space-x-2">
@@ -86,7 +85,7 @@ export default function CorporateLayout({ children }: CorporateLayoutProps) {
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="outline" size="icon" className="mr-2 md:hidden">
-                <Search className="h-4 w-4" />
+                <Menu className="h-4 w-4" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
@@ -133,18 +132,7 @@ export default function CorporateLayout({ children }: CorporateLayoutProps) {
           </NavigationMenu>
 
           {/* Right Side */}
-          <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-            <div className="w-full flex-1 md:w-auto md:flex-none">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Ara..."
-                  className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px]"
-                />
-              </div>
-            </div>
-            
+          <div className="flex items-center space-x-4 ml-auto">
             {/* Notifications */}
             <Button variant="ghost" size="icon">
               <Bell className="h-4 w-4" />
