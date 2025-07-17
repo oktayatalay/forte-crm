@@ -357,7 +357,6 @@ export default function MailAvatarPage() {
             </CardContent>
           </Card>
 
-        </div>
       </div>
     </div>
   );
