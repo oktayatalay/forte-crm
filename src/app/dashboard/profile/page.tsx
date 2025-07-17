@@ -338,14 +338,14 @@ export default function ProfilePage() {
                   Departman
                 </Label>
                 <Select 
-                  value={formData.department_id?.toString() || ''} 
-                  onValueChange={(value) => handleInputChange('department_id', value ? parseInt(value) : null)}
+                  value={formData.department_id?.toString() || undefined} 
+                  onValueChange={(value) => handleInputChange('department_id', value === "none" ? null : parseInt(value))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Departman seçiniz" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Departman seçiniz</SelectItem>
+                    <SelectItem value="none">Departman seçiniz</SelectItem>
                     {departments.map(dept => (
                       <SelectItem key={dept.id} value={dept.id.toString()}>
                         {dept.name}
@@ -358,14 +358,14 @@ export default function ProfilePage() {
               <div className="space-y-2">
                 <Label htmlFor="gender">Cinsiyet</Label>
                 <Select 
-                  value={formData.gender} 
-                  onValueChange={(value) => handleInputChange('gender', value)}
+                  value={formData.gender || undefined} 
+                  onValueChange={(value) => handleInputChange('gender', value === "none" ? "" : value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Cinsiyet seçiniz" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Belirtmek istemiyorum</SelectItem>
+                    <SelectItem value="none">Belirtmek istemiyorum</SelectItem>
                     <SelectItem value="male">Erkek</SelectItem>
                     <SelectItem value="female">Kadın</SelectItem>
                     <SelectItem value="other">Diğer</SelectItem>
