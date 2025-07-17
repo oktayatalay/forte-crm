@@ -34,6 +34,19 @@ interface DashboardStats {
   total_admins: number;
   total_departments: number;
   recent_logins: number;
+  department_stats?: Array<{
+    id: number;
+    name: string;
+    user_count: number;
+    percentage: number;
+  }>;
+  recent_activities?: Array<{
+    id: number;
+    activity_type: string;
+    user_email: string;
+    description: string;
+    created_at: string;
+  }>;
 }
 
 export default function AdminDashboard() {
@@ -447,32 +460,48 @@ export default function AdminDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Button variant="outline" className="h-auto p-4 justify-start">
-              <Users className="mr-2 h-4 w-4" />
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 justify-start hover:bg-blue-50 border-blue-200"
+              onClick={() => window.location.href = '/admin/users'}
+            >
+              <Users className="mr-2 h-4 w-4 text-blue-600" />
               <div className="text-left">
-                <div className="font-medium">Yeni Kullanıcı</div>
-                <div className="text-xs text-muted-foreground">Kullanıcı ekle</div>
+                <div className="font-medium">Kullanıcı Yönetimi</div>
+                <div className="text-xs text-muted-foreground">Kullanıcıları yönet</div>
               </div>
             </Button>
-            <Button variant="outline" className="h-auto p-4 justify-start">
-              <Building className="mr-2 h-4 w-4" />
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 justify-start hover:bg-green-50 border-green-200"
+              onClick={() => window.location.href = '/admin/departments'}
+            >
+              <Building className="mr-2 h-4 w-4 text-green-600" />
               <div className="text-left">
-                <div className="font-medium">Departman</div>
-                <div className="text-xs text-muted-foreground">Departman ekle</div>
+                <div className="font-medium">Departmanlar</div>
+                <div className="text-xs text-muted-foreground">Departman yönetimi</div>
               </div>
             </Button>
-            <Button variant="outline" className="h-auto p-4 justify-start">
-              <Shield className="mr-2 h-4 w-4" />
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 justify-start hover:bg-red-50 border-red-200"
+              onClick={() => window.location.href = '/admin/admins'}
+            >
+              <Shield className="mr-2 h-4 w-4 text-red-600" />
               <div className="text-left">
-                <div className="font-medium">Admin Yetkisi</div>
-                <div className="text-xs text-muted-foreground">Yetki ver</div>
+                <div className="font-medium">Admin Yönetimi</div>
+                <div className="text-xs text-muted-foreground">Admin yetkiler</div>
               </div>
             </Button>
-            <Button variant="outline" className="h-auto p-4 justify-start">
-              <Calendar className="mr-2 h-4 w-4" />
+            <Button 
+              variant="outline" 
+              className="h-auto p-4 justify-start hover:bg-purple-50 border-purple-200"
+              onClick={() => window.location.href = '/admin/settings'}
+            >
+              <Calendar className="mr-2 h-4 w-4 text-purple-600" />
               <div className="text-left">
-                <div className="font-medium">Rapor Al</div>
-                <div className="text-xs text-muted-foreground">Sistem raporu</div>
+                <div className="font-medium">Sistem Ayarları</div>
+                <div className="text-xs text-muted-foreground">Genel ayarlar</div>
               </div>
             </Button>
           </div>

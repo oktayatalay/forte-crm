@@ -5,7 +5,6 @@ import { Shield, Users, Settings, LogOut, BarChart3, Building, UserCheck, Camera
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
@@ -98,10 +97,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     <div className="min-h-screen bg-gray-50/40">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-        <div className="container flex h-16 items-center">
+        <div className="w-full flex h-16 items-center px-4 sm:px-6 lg:px-8">
           {/* Logo */}
           <div className="mr-4 hidden md:flex">
-            <Link href="/admin" className="mr-6 flex items-center space-x-2">
+            <Link href="/admin/dashboard" className="mr-6 flex items-center space-x-2">
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-red-600 to-pink-600 flex items-center justify-center">
                 <Shield className="h-4 w-4 text-white" />
               </div>
@@ -119,7 +118,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </SheetTrigger>
             <SheetContent side="left" className="w-72">
               <nav className="grid gap-2 text-lg font-medium">
-                <Link href="/admin" className="flex items-center gap-2 text-lg font-semibold mb-4">
+                <Link href="/admin/dashboard" className="flex items-center gap-2 text-lg font-semibold mb-4">
                   <div className="h-6 w-6 rounded bg-gradient-to-br from-red-600 to-pink-600 flex items-center justify-center">
                     <Shield className="h-3 w-3 text-white" />
                   </div>
@@ -165,21 +164,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
 
           {/* Right Side */}
-          <div className="flex items-center space-x-2">
-            {/* Search */}
-            <div className="relative hidden md:block">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Ara..."
-                className="pl-8 w-[200px] lg:w-[300px]"
-              />
-            </div>
-
+          <div className="flex items-center space-x-4 ml-auto">
             {/* Admin Status Badge */}
-            <Badge variant="secondary" className="hidden md:flex">
+            <Badge variant="destructive" className="hidden md:flex">
               <Shield className="mr-1 h-3 w-3" />
-              Admin
+              Admin Panel
             </Badge>
 
             {/* User Menu */}
