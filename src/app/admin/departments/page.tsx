@@ -276,9 +276,10 @@ export default function DepartmentManagement() {
     (dept.director_name && dept.director_name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const getIndentStyle = (level: number) => ({
-    paddingLeft: `${level * 24}px`
-  });
+  const getIndentClass = (level: number) => {
+    const indentClasses = ['pl-0', 'pl-6', 'pl-12', 'pl-18', 'pl-24'];
+    return indentClasses[level] || 'pl-24';
+  };
 
   if (loading) {
     return (
@@ -358,7 +359,7 @@ export default function DepartmentManagement() {
             <div className="space-y-4">
               {filteredDepartments.map(dept => (
                 <div key={dept.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className="flex-1" style={getIndentStyle(dept.level || 0)}>
+                  <div className={`flex-1 ${getIndentClass(dept.level || 0)}`}>
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center">
                         <span className="text-white font-medium text-sm">

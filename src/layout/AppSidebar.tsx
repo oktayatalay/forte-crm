@@ -133,13 +133,17 @@ const AppSidebar: React.FC = () => {
               ref={(el) => {
                 subMenuRefs.current[`${menuType}-${index}`] = el;
               }}
-              className="overflow-hidden transition-all duration-300"
+              className={`overflow-hidden transition-all duration-300 ${
+                openSubmenu?.type === menuType && openSubmenu?.index === index
+                  ? "opacity-100"
+                  : "opacity-0 max-h-0"
+              }`}
               style={{
-                height:
-                  openSubmenu?.type === menuType && openSubmenu?.index === index
-                    ? `${subMenuHeight[`${menuType}-${index}`]}px`
-                    : "0px",
-              }}
+                "--submenu-height": openSubmenu?.type === menuType && openSubmenu?.index === index
+                  ? `${subMenuHeight[`${menuType}-${index}`]}px`
+                  : "0px",
+                height: "var(--submenu-height)"
+              } as React.CSSProperties}
             >
               <ul className="mt-2 space-y-1 ml-9">
                 {nav.subItems.map((subItem) => (

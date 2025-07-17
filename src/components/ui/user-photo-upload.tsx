@@ -241,7 +241,7 @@ export default function UserPhotoUpload({
                     src={uploadedImage}
                     alt="Crop"
                     onLoad={onImageLoad}
-                    style={{ maxWidth: '100%', maxHeight: '400px' }}
+                    className="max-w-full max-h-[400px]"
                   />
                 </ReactCrop>
               </div>

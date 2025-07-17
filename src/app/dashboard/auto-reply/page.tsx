@@ -574,13 +574,7 @@ Acil durumlarda **${contactInfoTr}** ulaşabilirsiniz.
             
             <div className="border rounded-lg p-6 bg-white mb-4">
               <div 
-                style={{ 
-                  fontFamily: 'Arial, sans-serif', 
-                  fontSize: '12px',
-                  lineHeight: '1.5',
-                  whiteSpace: 'pre-wrap',
-                  margin: 0
-                }}
+                className="font-sans text-xs leading-relaxed whitespace-pre-wrap m-0"
                 dangerouslySetInnerHTML={{
                   __html: markdownToHtml(generateAutoReplyText())
                 }}

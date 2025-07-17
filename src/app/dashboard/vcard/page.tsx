@@ -391,8 +391,7 @@ export default function VCardPage() {
                 <Label>Avatar (Otomatik)</Label>
                 <div className="flex items-center space-x-3">
                   <div 
-                    className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
-                    style={{ backgroundColor: '#C6162A' }}
+                    className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold bg-red-700"
                   >
                     {generateAvatar()}
                   </div>
@@ -605,19 +604,15 @@ export default function VCardPage() {
             </CardHeader>
             <CardContent>
               
-              <div className="bg-gray-800 rounded-2xl p-4 mx-auto" style={{ width: '280px' }}>
-                <div className="bg-white rounded-xl overflow-hidden" style={{ height: '500px' }}>
+              <div className="bg-gray-800 rounded-2xl p-4 mx-auto w-[280px]">
+                <div className="bg-white rounded-xl overflow-hidden h-[500px]">
                   
                   {user?.name ? (
                     <div className="h-full flex flex-col">
                       {/* Header */}
                       <div className="bg-red-600 text-white p-4 text-center">
                         <div 
-                          className="w-16 h-16 rounded-full mx-auto mb-2 flex items-center justify-center text-lg font-bold border-2 border-white"
-                          style={{ 
-                            backgroundColor: '#C6162A',
-                            background: 'linear-gradient(135deg, #C6162A, #B0111F)'
-                          }}
+                          className="w-16 h-16 rounded-full mx-auto mb-2 flex items-center justify-center text-lg font-bold border-2 border-white bg-gradient-to-br from-red-700 to-red-800"
                         >
                           {generateAvatar()}
                         </div>

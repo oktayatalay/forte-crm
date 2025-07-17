@@ -386,8 +386,7 @@ ${signatureHTML}
             <div 
               id="preview"
               ref={previewRef}
-              className="border rounded-lg p-6 bg-white"
-              style={{ minHeight: '200px' }}
+              className="border rounded-lg p-6 bg-white min-h-[200px]"
               dangerouslySetInnerHTML={{ 
                 __html: DOMPurify.sanitize(user?.name && user?.title ? generateSignatureHTML() : '<p class="text-gray-500 italic">Profil bilgileri tamamlandığında önizleme görünecek</p>') 
               }}

@@ -299,17 +299,16 @@ export default function MailAvatarPage() {
                 <Label>Hazır Renkler</Label>
                 <div className="flex space-x-2">
                   {[
-                    '#b80728', // Forte Red
-                    '#1f2937', // Dark Gray
-                    '#059669', // Green
-                    '#dc2626', // Red
-                    '#2563eb', // Blue
-                    '#7c3aed', // Purple
-                  ].map(color => (
+                    { color: '#b80728', class: 'bg-red-700' }, // Forte Red
+                    { color: '#1f2937', class: 'bg-gray-800' }, // Dark Gray
+                    { color: '#059669', class: 'bg-green-600' }, // Green
+                    { color: '#dc2626', class: 'bg-red-600' }, // Red
+                    { color: '#2563eb', class: 'bg-blue-600' }, // Blue
+                    { color: '#7c3aed', class: 'bg-purple-600' }, // Purple
+                  ].map(({ color, class: bgClass }) => (
                     <button
                       key={color}
-                      className="w-8 h-8 rounded-full border-2 border-gray-300"
-                      style={{ backgroundColor: color }}
+                      className={`w-8 h-8 rounded-full border-2 border-gray-300 hover:border-gray-400 transition-colors ${bgClass}`}
                       onClick={() => handleInputChange('backgroundColor', color)}
                     />
                   ))}

@@ -839,13 +839,7 @@ export default function WelcomeMailings() {
                     <div className="space-y-4">
                       <canvas 
                         ref={mailingCanvasRef}
-                        style={{ 
-                          width: '100%', 
-                          maxWidth: '400px', 
-                          height: 'auto',
-                          border: '1px solid #ddd',
-                          borderRadius: '8px'
-                        }}
+                        className="w-full max-w-sm h-auto border border-gray-300 rounded-lg"
                       />
                       <Button 
                         onClick={() => mailingCanvasRef.current && downloadCanvas(mailingCanvasRef.current, `welcome-mailing-${selectedUser.name?.replace(/\s+/g, '-') || 'user'}.png`)}
@@ -870,13 +864,7 @@ export default function WelcomeMailings() {
                     <div className="space-y-4">
                       <canvas 
                         ref={storyCanvasRef}
-                        style={{ 
-                          width: '100%', 
-                          maxWidth: '200px', 
-                          height: 'auto',
-                          border: '1px solid #ddd',
-                          borderRadius: '8px'
-                        }}
+                        className="w-full max-w-[200px] h-auto border border-gray-300 rounded-lg"
                       />
                       <Button 
                         onClick={() => storyCanvasRef.current && downloadCanvas(storyCanvasRef.current, `welcome-story-${selectedUser.name?.replace(/\s+/g, '-') || 'user'}.png`)}
