@@ -3,7 +3,21 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { 
+  User, 
+  Mail, 
+  Clock, 
+  CreditCard, 
+  Users, 
+  Settings, 
+  ArrowRight,
+  TrendingUp,
+  Star,
+  Activity
+} from 'lucide-react';
+import Link from 'next/link';
 
 interface User {
   id: number;
@@ -13,6 +27,65 @@ interface User {
   mobile_phone_1: string | null;
   mobile_phone_2: string | null;
 }
+
+// Dashboard feature cards data
+const dashboardFeatures = [
+  {
+    title: "Mail Avatar",
+    description: "SVG formatında mail avatarı oluşturun ve indirin",
+    icon: User,
+    href: "/dashboard/mail-avatar",
+    color: "bg-blue-500",
+    stats: "Son 30 gün",
+    gradient: "from-blue-500 to-blue-600"
+  },
+  {
+    title: "Mail İmzası",
+    description: "HTML formatında Outlook mail imzası oluşturun",
+    icon: Mail,
+    href: "/dashboard/mail-signature",
+    color: "bg-green-500",
+    stats: "Aktif",
+    gradient: "from-green-500 to-green-600"
+  },
+  {
+    title: "Otomatik Yanıt",
+    description: "Out of office email metni oluşturun",
+    icon: Clock,
+    href: "/dashboard/auto-reply",
+    color: "bg-orange-500",
+    stats: "Hazır",
+    gradient: "from-orange-500 to-orange-600"
+  },
+  {
+    title: "Dijital Kartvizit",
+    description: "vCard'ınızı görüntüleyin ve QR kod indirin",
+    icon: CreditCard,
+    href: "/dashboard/vcard",
+    color: "bg-purple-500",
+    stats: "QR Kod",
+    gradient: "from-purple-500 to-purple-600"
+  },
+  {
+    title: "Ortak Hesaplar",
+    description: "WeTransfer, SmallPDF gibi ortak hesap bilgileri",
+    icon: Users,
+    href: "/dashboard/shared-accounts",
+    color: "bg-gray-500",
+    stats: "Yakında",
+    gradient: "from-gray-500 to-gray-600",
+    disabled: true
+  },
+  {
+    title: "Profil Ayarları",
+    description: "Kişisel bilgilerinizi güncelleyin",
+    icon: Settings,
+    href: "/dashboard/profile",
+    color: "bg-red-500",
+    stats: "Profil",
+    gradient: "from-red-500 to-red-600"
+  }
+];
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -57,194 +130,220 @@ export default function Dashboard() {
     verifySession();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('session_token');
-    localStorage.removeItem('user');
-    window.location.href = '../';
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p>Yükleniyor...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Yükleniyor...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-xl font-semibold text-gray-900">Forte Panel</h1>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">{user?.email}</span>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
-                Çıkış Yap
-              </Button>
-            </div>
+    <div className="space-y-8">
+      {/* Welcome Section */}
+      <div className="flex flex-col space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Hoş geldiniz{user?.name ? `, ${user.name}` : ''}!
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Forte Corporate Panel&apos;e hoş geldiniz. Aşağıdaki araçları kullanabilirsiniz.
+            </p>
           </div>
+          <Badge variant="outline" className="h-8">
+            <Activity className="mr-1 h-3 w-3" />
+            Aktif
+          </Badge>
         </div>
-      </header>
+      </div>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Hoş geldiniz{user?.name ? `, ${user.name}` : ''}!
-          </h2>
-          <p className="text-gray-600">
-            Forte Panel&apos;e hoş geldiniz. Aşağıdaki araçları kullanabilirsiniz.
-          </p>
+      {/* Quick Stats */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Kullanılan Araçlar
+            </CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">4</div>
+            <p className="text-xs text-muted-foreground">
+              Toplam araç sayısı
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Profil Durumu
+            </CardTitle>
+            <User className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {user?.name ? '100%' : '60%'}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Tamamlanma oranı
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Son Kullanım
+            </CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">Bugün</div>
+            <p className="text-xs text-muted-foreground">
+              Son oturum açma
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Favori Araç
+            </CardTitle>
+            <Star className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">Mail İmzası</div>
+            <p className="text-xs text-muted-foreground">
+              En çok kullanılan
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Feature Cards */}
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight mb-4">Araçlar</h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {dashboardFeatures.map((feature) => {
+            const Icon = feature.icon;
+            return (
+              <Card key={feature.title} className={`hover:shadow-lg transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br ${feature.gradient} text-white relative overflow-hidden group ${feature.disabled ? 'opacity-75' : ''}`}>
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <CardHeader className="relative">
+                  <div className="flex items-center justify-between">
+                    <div className="p-2 bg-white/20 rounded-lg">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                      {feature.stats}
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-white mt-4">{feature.title}</CardTitle>
+                  <CardDescription className="text-white/80">
+                    {feature.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="relative">
+                  {feature.disabled ? (
+                    <Button disabled className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30">
+                      Yakında Gelecek
+                    </Button>
+                  ) : (
+                    <Link href={feature.href}>
+                      <Button className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30 group">
+                        Başlat
+                        <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      </Button>
+                    </Link>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
+      </div>
 
-        {/* Feature Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Mail Avatar Generator */}
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                Mail Avatar
-              </CardTitle>
-              <CardDescription>
-                SVG formatında mail avatarı oluşturun ve indirin
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button 
-                className="w-full" 
-                onClick={() => window.location.href = '/dashboard/mail-avatar/'}
-              >
-                🎨 Avatar Oluştur
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Email Signature Generator */}
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                Mail İmzası
-              </CardTitle>
-              <CardDescription>
-                HTML formatında Outlook mail imzası oluşturun
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button 
-                className="w-full"
-                onClick={() => window.location.href = '/dashboard/mail-signature/'}
-              >
-                📧 İmza Oluştur
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Out of Office Generator */}
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Otomatik Yanıt
-              </CardTitle>
-              <CardDescription>
-                Out of office email metni oluşturun
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button 
-                className="w-full"
-                onClick={() => window.location.href = '/dashboard/auto-reply/'}
-              >
-                🏖️ Otomatik Yanıt Oluştur
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* vCard Viewer */}
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 2v20M14 2v20M4 7h16M4 17h16" />
-                </svg>
-                Dijital Kartvizit
-              </CardTitle>
-              <CardDescription>
-                vCard&apos;ınızı görüntüleyin ve QR kod indirin
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button 
-                className="w-full"
-                onClick={() => window.location.href = '/dashboard/vcard/'}
-              >
-                📇 vCard&apos;ınızı Görüntüleyin
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Shared Credentials */}
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                Ortak Hesaplar
-              </CardTitle>
-              <CardDescription>
-                WeTransfer, SmallPDF gibi ortak hesap bilgileri
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" disabled>
-                Yakında Gelecek
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* User Info Section */}
-        <div className="mt-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profil Bilgileri</CardTitle>
-              <CardDescription>
-                Kişisel bilgilerinizi güncelleyin
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm">
-                <p><strong>Email:</strong> {user?.email}</p>
-                <p><strong>Ad Soyad:</strong> {user?.name || 'Henüz girilmemiş'}</p>
-                <p><strong>Unvan:</strong> {user?.title || 'Henüz girilmemiş'}</p>
-                <p><strong>Telefon 1:</strong> {user?.mobile_phone_1 || 'Henüz girilmemiş'}</p>
-                <p><strong>Telefon 2:</strong> {user?.mobile_phone_2 || 'Henüz girilmemiş'}</p>
+      {/* User Profile Section */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <User className="mr-2 h-5 w-5" />
+              Profil Bilgileri
+            </CardTitle>
+            <CardDescription>
+              Kişisel bilgilerinizi görüntüleyin ve güncelleyin
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Email:</span>
+                <span className="text-sm text-muted-foreground">{user?.email}</span>
               </div>
-              <Button 
-                className="mt-4" 
-                variant="outline"
-                onClick={() => window.location.href = '/dashboard/profile/'}
-              >
-                ✏️ Düzenle
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Ad Soyad:</span>
+                <span className="text-sm text-muted-foreground">{user?.name || 'Henüz girilmemiş'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Unvan:</span>
+                <span className="text-sm text-muted-foreground">{user?.title || 'Henüz girilmemiş'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Telefon:</span>
+                <span className="text-sm text-muted-foreground">{user?.mobile_phone_1 || 'Henüz girilmemiş'}</span>
+              </div>
+            </div>
+            <Link href="/dashboard/profile">
+              <Button variant="outline" className="w-full">
+                <Settings className="mr-2 h-4 w-4" />
+                Profili Düzenle
               </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </main>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Activity className="mr-2 h-5 w-5" />
+              Hızlı Erişim
+            </CardTitle>
+            <CardDescription>
+              Sık kullanılan araçlara hızlı erişim
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Link href="/dashboard/mail-signature">
+              <Button variant="ghost" className="w-full justify-start">
+                <Mail className="mr-2 h-4 w-4" />
+                Mail İmzası
+              </Button>
+            </Link>
+            <Link href="/dashboard/mail-avatar">
+              <Button variant="ghost" className="w-full justify-start">
+                <User className="mr-2 h-4 w-4" />
+                Mail Avatar
+              </Button>
+            </Link>
+            <Link href="/dashboard/vcard">
+              <Button variant="ghost" className="w-full justify-start">
+                <CreditCard className="mr-2 h-4 w-4" />
+                Dijital Kartvizit
+              </Button>
+            </Link>
+            <Link href="/dashboard/auto-reply">
+              <Button variant="ghost" className="w-full justify-start">
+                <Clock className="mr-2 h-4 w-4" />
+                Otomatik Yanıt
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
