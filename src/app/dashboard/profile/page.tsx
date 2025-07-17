@@ -6,7 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { User, Mail, Phone, MapPin, Building, Calendar, Settings, Save, RotateCcw } from 'lucide-react';
 import UserPhotoUpload from '@/components/ui/user-photo-upload';
 
 interface User {
@@ -208,245 +212,288 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header Section */}
-      <div className="flex flex-col space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Profil Düzenle
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Mail imzası ve diğer özelliklerde kullanılacak bilgilerinizi güncelleyin
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm font-medium">{user?.email}</p>
-            <p className="text-xs text-muted-foreground">Kullanıcı hesabı</p>
-          </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight">Profil Düzenle</h1>
+          <p className="text-sm text-muted-foreground">
+            Mail imzası ve diğer özelliklerde kullanılacak bilgilerinizi güncelleyin
+          </p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Badge variant="outline" className="text-xs">
+            <Mail className="w-3 h-3 mr-1" />
+            {user?.email}
+          </Badge>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-2xl">
-        <Card>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Profile Photo Section */}
+        <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle>Kişisel Bilgiler</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              Profil Fotoğrafı
+            </CardTitle>
             <CardDescription>
-              Mail imzası ve diğer özelliklerde kullanılacak bilgilerinizi güncelleyin
+              Fotoğrafınız mail imzası ve diğer yerlerde kullanılacak
             </CardDescription>
           </CardHeader>
-          
-          <CardContent className="space-y-4">
-            
-            {/* Profile Photo */}
-            <div className="space-y-2">
-              <Label>Profil Fotoğrafı</Label>
-              <UserPhotoUpload
-                currentImage={user?.user_image}
-                onImageUpdate={async (imageData) => {
-                  try {
-                    const token = localStorage.getItem('session_token');
-                    const response = await fetch('/api/endpoints/update_user_photo.php', {
-                      method: 'POST',
-                      headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({ image_data: imageData }),
-                    });
+          <CardContent className="flex flex-col items-center space-y-4">
+            <UserPhotoUpload
+              currentImage={user?.user_image}
+              onImageUpdate={async (imageData) => {
+                try {
+                  const token = localStorage.getItem('session_token');
+                  const response = await fetch('/api/endpoints/update_user_photo.php', {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ image_data: imageData }),
+                  });
 
-                    if (response.ok) {
-                      setUser(prev => prev ? { ...prev, user_image: imageData } : null);
-                      // LocalStorage'daki user bilgilerini güncelle
-                      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-                      localStorage.setItem('user', JSON.stringify({
-                        ...currentUser,
-                        user_image: imageData
-                      }));
-                    } else {
-                      const data = await response.json();
-                      toast.error(data.error || 'Fotoğraf güncellenemedi');
-                    }
-                  } catch {
-                    toast.error('Bağlantı hatası');
+                  if (response.ok) {
+                    setUser(prev => prev ? { ...prev, user_image: imageData } : null);
+                    // LocalStorage'daki user bilgilerini güncelle
+                    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                    localStorage.setItem('user', JSON.stringify({
+                      ...currentUser,
+                      user_image: imageData
+                    }));
+                    toast.success('Profil fotoğrafı güncellendi');
+                  } else {
+                    const data = await response.json();
+                    toast.error(data.error || 'Fotoğraf güncellenemedi');
                   }
-                }}
-                size="lg"
-                className="flex flex-col items-center"
-              />
-              <p className="text-sm text-gray-500">
-                Fotoğrafınız mail imzası ve diğer yerlerde kullanılacak
-              </p>
-            </div>
-            
+                } catch {
+                  toast.error('Bağlantı hatası');
+                }
+              }}
+              size="lg"
+              className="flex flex-col items-center"
+            />
+          </CardContent>
+        </Card>
+
+        {/* Main Form */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Kişisel Bilgiler
+            </CardTitle>
+            <CardDescription>
+              Profil bilgilerinizi güncelleyin
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
             {/* Email (Read-only) */}
             <div className="space-y-2">
-              <Label htmlFor="email">Email Adresi</Label>
+              <Label htmlFor="email" className="flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                Email Adresi
+              </Label>
               <Input
                 id="email"
                 value={user?.email || ''}
                 disabled
-                className="bg-gray-100"
+                className="bg-muted"
               />
-              <p className="text-sm text-gray-500">Email adresi değiştirilemez</p>
+              <p className="text-sm text-muted-foreground">Email adresi değiştirilemez</p>
             </div>
 
-            {/* Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name">Ad Soyad</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
-                placeholder="Örn: Oktay Atalay"
-              />
+            <Separator />
+
+            {/* Basic Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Ad Soyad</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  placeholder="Örn: Oktay Atalay"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="title">Unvan / Pozisyon</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  placeholder="Örn: Yazılım Geliştirici"
+                />
+              </div>
             </div>
 
-            {/* Title */}
-            <div className="space-y-2">
-              <Label htmlFor="title">Unvan / Pozisyon</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => handleInputChange('title', e.target.value)}
-                placeholder="Örn: Yazılım Geliştirici"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="department" className="flex items-center gap-2">
+                  <Building className="w-4 h-4" />
+                  Departman
+                </Label>
+                <Select 
+                  value={formData.department_id?.toString() || ''} 
+                  onValueChange={(value) => handleInputChange('department_id', value ? parseInt(value) : null)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Departman seçiniz" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Departman seçiniz</SelectItem>
+                    {departments.map(dept => (
+                      <SelectItem key={dept.id} value={dept.id.toString()}>
+                        {dept.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="gender">Cinsiyet</Label>
+                <Select 
+                  value={formData.gender} 
+                  onValueChange={(value) => handleInputChange('gender', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Cinsiyet seçiniz" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Belirtmek istemiyorum</SelectItem>
+                    <SelectItem value="male">Erkek</SelectItem>
+                    <SelectItem value="female">Kadın</SelectItem>
+                    <SelectItem value="other">Diğer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            {/* Department */}
-            <div className="space-y-2">
-              <Label htmlFor="department">Departman</Label>
-              <Select 
-                value={formData.department_id?.toString() || ''} 
-                onValueChange={(value) => handleInputChange('department_id', value ? parseInt(value) : null)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Departman seçiniz" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Departman seçiniz</SelectItem>
-                  {departments.map(dept => (
-                    <SelectItem key={dept.id} value={dept.id.toString()}>
-                      {dept.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Separator />
+
+            {/* Contact Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium flex items-center gap-2">
+                <Phone className="w-4 h-4" />
+                İletişim Bilgileri
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="mobile1">Cep Telefonu 1</Label>
+                  <Input
+                    id="mobile1"
+                    type="tel"
+                    value={formData.mobile_phone_1}
+                    onChange={(e) => handleInputChange('mobile_phone_1', e.target.value)}
+                    placeholder="Örn: +90 555 123 45 67"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="mobile2">Cep Telefonu 2 (Opsiyonel)</Label>
+                  <Input
+                    id="mobile2"
+                    type="tel"
+                    value={formData.mobile_phone_2}
+                    onChange={(e) => handleInputChange('mobile_phone_2', e.target.value)}
+                    placeholder="Örn: +90 555 987 65 43"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city" className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    Yaşadığı Şehir
+                  </Label>
+                  <Input
+                    id="city"
+                    value={formData.city}
+                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    placeholder="Örn: İstanbul"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="birth_date" className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Doğum Tarihi
+                  </Label>
+                  <Input
+                    id="birth_date"
+                    type="date"
+                    value={formData.birth_date}
+                    onChange={(e) => handleInputChange('birth_date', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="address">Adres</Label>
+                <Textarea
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
+                  placeholder="Tam adres bilgisi..."
+                  rows={3}
+                />
+              </div>
             </div>
 
-            {/* Gender */}
-            <div className="space-y-2">
-              <Label htmlFor="gender">Cinsiyet</Label>
-              <Select 
-                value={formData.gender} 
-                onValueChange={(value) => handleInputChange('gender', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Cinsiyet seçiniz" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Belirtmek istemiyorum</SelectItem>
-                  <SelectItem value="male">Erkek</SelectItem>
-                  <SelectItem value="female">Kadın</SelectItem>
-                  <SelectItem value="other">Diğer</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Separator />
 
-            {/* Birth Date */}
-            <div className="space-y-2">
-              <Label htmlFor="birth_date">Doğum Tarihi</Label>
-              <Input
-                id="birth_date"
-                type="date"
-                value={formData.birth_date}
-                onChange={(e) => handleInputChange('birth_date', e.target.value)}
-              />
-            </div>
-
-            {/* City */}
-            <div className="space-y-2">
-              <Label htmlFor="city">Yaşadığı Şehir</Label>
-              <Input
-                id="city"
-                value={formData.city}
-                onChange={(e) => handleInputChange('city', e.target.value)}
-                placeholder="Örn: İstanbul"
-              />
-            </div>
-
-            {/* Address */}
-            <div className="space-y-2">
-              <Label htmlFor="address">Adres</Label>
-              <textarea
-                id="address"
-                value={formData.address}
-                onChange={(e) => handleInputChange('address', e.target.value)}
-                placeholder="Tam adres bilgisi..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 resize-none"
-                rows={3}
-              />
-            </div>
-
-            {/* Mobile Phone 1 */}
-            <div className="space-y-2">
-              <Label htmlFor="mobile1">Cep Telefonu 1</Label>
-              <Input
-                id="mobile1"
-                type="tel"
-                value={formData.mobile_phone_1}
-                onChange={(e) => handleInputChange('mobile_phone_1', e.target.value)}
-                placeholder="Örn: +90 555 123 45 67"
-              />
-            </div>
-
-            {/* Mobile Phone 2 */}
-            <div className="space-y-2">
-              <Label htmlFor="mobile2">Cep Telefonu 2 (Opsiyonel)</Label>
-              <Input
-                id="mobile2"
-                type="tel"
-                value={formData.mobile_phone_2}
-                onChange={(e) => handleInputChange('mobile_phone_2', e.target.value)}
-                placeholder="Örn: +90 555 987 65 43"
-              />
-            </div>
-
-            {/* Offices */}
-            <div className="space-y-2">
-              <Label>Çalıştığınız Ofisler</Label>
-              <div className="space-y-3">
+            {/* Office Selection */}
+            <div className="space-y-4">
+              <div>
+                <Label className="text-lg font-medium flex items-center gap-2">
+                  <Building className="w-4 h-4" />
+                  Çalıştığınız Ofisler
+                </Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Seçtiğiniz ofisler mail imzanızda görünecek
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {offices.map(office => (
-                  <div key={office.code} className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      id={office.code}
-                      checked={formData.offices.includes(office.code)}
-                      onChange={(e) => handleOfficeChange(office.code, e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                    />
-                    <Label htmlFor={office.code} className="flex-1 cursor-pointer">
-                      <div className="font-medium">{office.name}</div>
-                      <div className="text-sm text-gray-500">{office.address}</div>
-                      <div className="text-xs text-gray-400">{office.phone}</div>
-                    </Label>
-                  </div>
+                  <Card key={office.code} className="p-4">
+                    <div className="flex items-start space-x-3">
+                      <input
+                        type="checkbox"
+                        id={office.code}
+                        checked={formData.offices.includes(office.code)}
+                        onChange={(e) => handleOfficeChange(office.code, e.target.checked)}
+                        className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 mt-1"
+                      />
+                      <Label htmlFor={office.code} className="flex-1 cursor-pointer">
+                        <div className="font-medium">{office.name}</div>
+                        <div className="text-sm text-muted-foreground">{office.address}</div>
+                        <div className="text-xs text-muted-foreground">{office.phone}</div>
+                      </Label>
+                    </div>
+                  </Card>
                 ))}
               </div>
-              <p className="text-sm text-gray-500">
-                Seçtiğiniz ofisler mail imzanızda görünecek
-              </p>
             </div>
 
+            <Separator />
+
             {/* Action Buttons */}
-            <div className="flex space-x-3 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <Button 
                 onClick={handleSave}
                 disabled={saving}
                 className="flex-1"
               >
-                {saving ? 'Kaydediliyor...' : '💾 Kaydet'}
+                <Save className="w-4 h-4 mr-2" />
+                {saving ? 'Kaydediliyor...' : 'Kaydet'}
               </Button>
               
               <Button 
@@ -454,23 +501,33 @@ export default function ProfilePage() {
                 onClick={handleReset}
                 disabled={saving}
               >
-                ↺ Sıfırla
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Sıfırla
               </Button>
             </div>
+          </CardContent>
+        </Card>
+      </div>
 
-            {/* Info */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <h4 className="text-sm font-semibold text-blue-900 mb-2">💡 Kullanım Alanları</h4>
+      {/* Info Card */}
+      <Card className="bg-blue-50/50 border-blue-200">
+        <CardContent className="pt-6">
+          <div className="flex items-start space-x-3">
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <Settings className="w-4 h-4 text-blue-600" />
+            </div>
+            <div>
+              <h4 className="font-medium text-blue-900 mb-2">Kullanım Alanları</h4>
               <ul className="text-sm text-blue-700 space-y-1">
                 <li>• <strong>Ad Soyad:</strong> Mail imzası ve avatar&apos;da görünür</li>
                 <li>• <strong>Unvan:</strong> Mail imzasında görünür</li>
                 <li>• <strong>Telefon:</strong> Mail imzası ve out-of-office mesajlarında kullanılır</li>
+                <li>• <strong>Ofis bilgileri:</strong> Mail imzasında iletişim detayları olarak görünür</li>
               </ul>
             </div>
-
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
