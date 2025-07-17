@@ -71,7 +71,7 @@ export default function CorporateLayout({ children }: CorporateLayoutProps) {
     <div className="min-h-screen bg-gray-50/40">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-        <div className="container flex h-14 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex h-14 items-center">
           {/* Logo */}
           <div className="mr-4 hidden md:flex">
             <Link href="/dashboard" className="mr-6 flex items-center space-x-2">
@@ -189,13 +189,13 @@ export default function CorporateLayout({ children }: CorporateLayoutProps) {
       </header>
 
       {/* Main Content */}
-      <main className="container py-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {children}
       </main>
 
       {/* Footer */}
       <footer className="border-t">
-        <div className="container flex flex-col items-center justify-between gap-4 py-10 md:h-24 md:flex-row md:py-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-between gap-4 py-10 md:h-24 md:flex-row md:py-0">
           <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
             <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
               © 2024 Forte Tourism. Tüm hakları saklıdır.

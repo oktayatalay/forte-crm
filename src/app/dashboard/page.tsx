@@ -161,6 +161,85 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* User Profile and Quick Access - Top Section */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <User className="mr-2 h-5 w-5" />
+              Profil Bilgileri
+            </CardTitle>
+            <CardDescription>
+              Kişisel bilgilerinizi görüntüleyin ve güncelleyin
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Email:</span>
+                <span className="text-sm text-muted-foreground">{user?.email}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Ad Soyad:</span>
+                <span className="text-sm text-muted-foreground">{user?.name || 'Henüz girilmemiş'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Unvan:</span>
+                <span className="text-sm text-muted-foreground">{user?.title || 'Henüz girilmemiş'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Telefon:</span>
+                <span className="text-sm text-muted-foreground">{user?.mobile_phone_1 || 'Henüz girilmemiş'}</span>
+              </div>
+            </div>
+            <Link href="/dashboard/profile">
+              <Button variant="outline" className="w-full">
+                <Settings className="mr-2 h-4 w-4" />
+                Profili Düzenle
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Activity className="mr-2 h-5 w-5" />
+              Hızlı Erişim
+            </CardTitle>
+            <CardDescription>
+              Sık kullanılan araçlara hızlı erişim
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Link href="/dashboard/mail-signature">
+              <Button variant="ghost" className="w-full justify-start">
+                <Mail className="mr-2 h-4 w-4" />
+                Mail İmzası
+              </Button>
+            </Link>
+            <Link href="/dashboard/mail-avatar">
+              <Button variant="ghost" className="w-full justify-start">
+                <User className="mr-2 h-4 w-4" />
+                Mail Avatar
+              </Button>
+            </Link>
+            <Link href="/dashboard/vcard">
+              <Button variant="ghost" className="w-full justify-start">
+                <CreditCard className="mr-2 h-4 w-4" />
+                Dijital Kartvizit
+              </Button>
+            </Link>
+            <Link href="/dashboard/auto-reply">
+              <Button variant="ghost" className="w-full justify-start">
+                <Clock className="mr-2 h-4 w-4" />
+                Otomatik Yanıt
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Quick Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -266,84 +345,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* User Profile Section */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <User className="mr-2 h-5 w-5" />
-              Profil Bilgileri
-            </CardTitle>
-            <CardDescription>
-              Kişisel bilgilerinizi görüntüleyin ve güncelleyin
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Email:</span>
-                <span className="text-sm text-muted-foreground">{user?.email}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Ad Soyad:</span>
-                <span className="text-sm text-muted-foreground">{user?.name || 'Henüz girilmemiş'}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Unvan:</span>
-                <span className="text-sm text-muted-foreground">{user?.title || 'Henüz girilmemiş'}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Telefon:</span>
-                <span className="text-sm text-muted-foreground">{user?.mobile_phone_1 || 'Henüz girilmemiş'}</span>
-              </div>
-            </div>
-            <Link href="/dashboard/profile">
-              <Button variant="outline" className="w-full">
-                <Settings className="mr-2 h-4 w-4" />
-                Profili Düzenle
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Activity className="mr-2 h-5 w-5" />
-              Hızlı Erişim
-            </CardTitle>
-            <CardDescription>
-              Sık kullanılan araçlara hızlı erişim
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Link href="/dashboard/mail-signature">
-              <Button variant="ghost" className="w-full justify-start">
-                <Mail className="mr-2 h-4 w-4" />
-                Mail İmzası
-              </Button>
-            </Link>
-            <Link href="/dashboard/mail-avatar">
-              <Button variant="ghost" className="w-full justify-start">
-                <User className="mr-2 h-4 w-4" />
-                Mail Avatar
-              </Button>
-            </Link>
-            <Link href="/dashboard/vcard">
-              <Button variant="ghost" className="w-full justify-start">
-                <CreditCard className="mr-2 h-4 w-4" />
-                Dijital Kartvizit
-              </Button>
-            </Link>
-            <Link href="/dashboard/auto-reply">
-              <Button variant="ghost" className="w-full justify-start">
-                <Clock className="mr-2 h-4 w-4" />
-                Otomatik Yanıt
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }
