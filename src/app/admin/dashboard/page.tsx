@@ -34,13 +34,18 @@ interface DashboardStats {
   total_admins: number;
   total_departments: number;
   recent_logins: number;
-  department_stats?: Array<{
+  department_stats: Array<{
     id: number;
     name: string;
     user_count: number;
     percentage: number;
   }>;
-  recent_activities?: Array<{
+  weekly_stats: Array<{
+    day: string;
+    count: number;
+    percentage: number;
+  }>;
+  recent_activities: Array<{
     id: number;
     activity_type: string;
     user_email: string;
@@ -52,10 +57,13 @@ interface DashboardStats {
 export default function AdminDashboard() {
   const [admin, setAdmin] = useState<AdminUser | null>(null);
   const [stats, setStats] = useState<DashboardStats>({
-    total_users: 42,
-    total_admins: 3,
-    total_departments: 8,
-    recent_logins: 12
+    total_users: 0,
+    total_admins: 0,
+    total_departments: 0,
+    recent_logins: 0,
+    department_stats: [],
+    weekly_stats: [],
+    recent_activities: []
   });
   const [loading, setLoading] = useState(true);
 
@@ -239,41 +247,20 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Pazartesi</span>
-                <div className="flex items-center space-x-2">
-                  <Progress value={85} className="w-[100px]" />
-                  <span className="text-sm text-muted-foreground">34</span>
+              {stats.weekly_stats.map((day, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{day.day}</span>
+                  <div className="flex items-center space-x-2">
+                    <Progress value={day.percentage} className="w-[100px]" />
+                    <span className="text-sm text-muted-foreground">{day.count}</span>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Salı</span>
-                <div className="flex items-center space-x-2">
-                  <Progress value={72} className="w-[100px]" />
-                  <span className="text-sm text-muted-foreground">29</span>
+              ))}
+              {stats.weekly_stats.length === 0 && (
+                <div className="text-center py-4">
+                  <span className="text-sm text-muted-foreground">Henüz veri yok</span>
                 </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Çarşamba</span>
-                <div className="flex items-center space-x-2">
-                  <Progress value={91} className="w-[100px]" />
-                  <span className="text-sm text-muted-foreground">38</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Perşembe</span>
-                <div className="flex items-center space-x-2">
-                  <Progress value={78} className="w-[100px]" />
-                  <span className="text-sm text-muted-foreground">31</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Cuma</span>
-                <div className="flex items-center space-x-2">
-                  <Progress value={65} className="w-[100px]" />
-                  <span className="text-sm text-muted-foreground">26</span>
-                </div>
-              </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -290,46 +277,28 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                  <span className="text-sm font-medium">IT</span>
+              {stats.department_stats.map((dept, index) => {
+                const colors = ['bg-blue-500', 'bg-green-500', 'bg-orange-500', 'bg-purple-500', 'bg-red-500', 'bg-yellow-500', 'bg-pink-500', 'bg-indigo-500'];
+                const colorClass = colors[index % colors.length];
+                
+                return (
+                  <div key={dept.id} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-3 h-3 rounded-full ${colorClass}`}></div>
+                      <span className="text-sm font-medium">{dept.name}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Progress value={dept.percentage} className="w-[100px]" />
+                      <span className="text-sm text-muted-foreground">{dept.user_count}</span>
+                    </div>
+                  </div>
+                );
+              })}
+              {stats.department_stats.length === 0 && (
+                <div className="text-center py-4">
+                  <span className="text-sm text-muted-foreground">Henüz departman verisi yok</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Progress value={35} className="w-[100px]" />
-                  <span className="text-sm text-muted-foreground">15</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-sm font-medium">Satış</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Progress value={28} className="w-[100px]" />
-                  <span className="text-sm text-muted-foreground">12</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                  <span className="text-sm font-medium">Pazarlama</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Progress value={23} className="w-[100px]" />
-                  <span className="text-sm text-muted-foreground">10</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                  <span className="text-sm font-medium">İK</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Progress value={14} className="w-[100px]" />
-                  <span className="text-sm text-muted-foreground">6</span>
-                </div>
-              </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -349,38 +318,47 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <div className="flex-1 text-sm">
-                  <span className="font-medium">Yeni kullanıcı kaydı</span>
-                  <span className="text-muted-foreground ml-2">ahmet.kaya@forte.works</span>
+              {stats.recent_activities.map((activity) => {
+                const activityColors = {
+                  'user_login': 'bg-green-500',
+                  'profile_update': 'bg-blue-500', 
+                  'signature_created': 'bg-orange-500',
+                  'department_change': 'bg-purple-500',
+                  'default': 'bg-gray-500'
+                };
+                
+                const colorClass = activityColors[activity.activity_type as keyof typeof activityColors] || activityColors.default;
+                
+                const formatTimeAgo = (dateStr: string) => {
+                  const now = new Date();
+                  const activityDate = new Date(dateStr);
+                  const diffMs = now.getTime() - activityDate.getTime();
+                  const diffMins = Math.floor(diffMs / (1000 * 60));
+                  
+                  if (diffMins < 1) return 'Az önce';
+                  if (diffMins < 60) return `${diffMins} dk önce`;
+                  const diffHours = Math.floor(diffMins / 60);
+                  if (diffHours < 24) return `${diffHours} saat önce`;
+                  const diffDays = Math.floor(diffHours / 24);
+                  return `${diffDays} gün önce`;
+                };
+                
+                return (
+                  <div key={activity.id} className="flex items-center space-x-3">
+                    <div className={`w-2 h-2 rounded-full ${colorClass}`}></div>
+                    <div className="flex-1 text-sm">
+                      <span className="font-medium">{activity.description}</span>
+                      <span className="text-muted-foreground ml-2">{activity.user_email}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{formatTimeAgo(activity.created_at)}</span>
+                  </div>
+                );
+              })}
+              {stats.recent_activities.length === 0 && (
+                <div className="text-center py-4">
+                  <span className="text-sm text-muted-foreground">Henüz aktivite yok</span>
                 </div>
-                <span className="text-xs text-muted-foreground">2 dk önce</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div className="flex-1 text-sm">
-                  <span className="font-medium">Profil güncellendi</span>
-                  <span className="text-muted-foreground ml-2">mehmet.yilmaz@forte.works</span>
-                </div>
-                <span className="text-xs text-muted-foreground">5 dk önce</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                <div className="flex-1 text-sm">
-                  <span className="font-medium">Mail imzası oluşturuldu</span>
-                  <span className="text-muted-foreground ml-2">ayse.demir@forte.works</span>
-                </div>
-                <span className="text-xs text-muted-foreground">12 dk önce</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                <div className="flex-1 text-sm">
-                  <span className="font-medium">Departman değişikliği</span>
-                  <span className="text-muted-foreground ml-2">fatma.ozturk@forte.works</span>
-                </div>
-                <span className="text-xs text-muted-foreground">25 dk önce</span>
-              </div>
+              )}
             </div>
           </CardContent>
         </Card>

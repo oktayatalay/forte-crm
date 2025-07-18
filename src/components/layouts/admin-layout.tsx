@@ -72,6 +72,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   
   const isActive = (href: string) => pathname === href;
 
+  const handleLogout = () => {
+    // Clear local storage
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_user');
+    
+    // Redirect to login
+    window.location.href = '/admin';
+  };
+
   // Generate breadcrumbs from current path
   const generateBreadcrumbs = () => {
     const segments = pathname.split('/').filter(Boolean);
@@ -189,16 +198,23 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Profil</span>
+                <DropdownMenuItem asChild>
+                  <Link href="/admin/profile" className="flex items-center">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Profil</span>
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Shield className="mr-2 h-4 w-4" />
-                  <span>Sistem Ayarları</span>
+                <DropdownMenuItem asChild>
+                  <Link href="/admin/settings" className="flex items-center">
+                    <Shield className="mr-2 h-4 w-4" />
+                    <span>Sistem Ayarları</span>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem 
+                  className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer"
+                  onClick={handleLogout}
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Çıkış</span>
                 </DropdownMenuItem>

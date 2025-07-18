@@ -253,137 +253,123 @@ export default function UserPhotos() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="space-y-6">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900">Kullanıcı Fotoğrafları</h1>
-              <p className="text-sm text-gray-500 mt-1">Departmanlara göre kullanıcı fotoğraflarını yönetin</p>
-            </div>
-            <Button 
-              variant="outline" 
-              onClick={() => window.location.href = '/admin/dashboard'}
-            >
-              ← Dashboard&apos;a Dön
-            </Button>
-          </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Kullanıcı Fotoğrafları</h1>
+          <p className="text-muted-foreground mt-2">
+            Departmanlara göre kullanıcı fotoğraflarını yönetin
+          </p>
         </div>
-      </header>
+      </div>
 
-      {/* Main Content */}
-      <main className="px-6 lg:px-8 py-6">
-        <div className="max-w-7xl mx-auto">
-          
-          {/* Search */}
-          <div className="mb-6">
-            <Input
-              type="text"
-              placeholder="Kullanıcı adı, e-posta veya unvan ara..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-md"
-            />
-          </div>
+      {/* Search */}
+      <div className="mb-6">
+        <Input
+          type="text"
+          placeholder="Kullanıcı adı, e-posta veya unvan ara..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-md"
+        />
+      </div>
 
-          {/* Departments */}
-          {filteredDepartments.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-8">
-                <p className="text-gray-500">Arama kriterinize uygun kullanıcı bulunamadı.</p>
+      {/* Departments */}
+      {filteredDepartments.length === 0 ? (
+        <Card>
+          <CardContent className="text-center py-8">
+            <p className="text-gray-500">Arama kriterinize uygun kullanıcı bulunamadı.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-8">
+          {filteredDepartments.map((department) => (
+            <Card key={department.id}>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  🏢 {department.name}
+                  <span className="ml-2 text-sm font-normal text-gray-500">
+                    ({department.users.length} kullanıcı)
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {department.users.map((user) => (
+                    <div key={user.id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
+                      {/* User Photo */}
+                      <div className="w-24 h-24 mx-auto mb-4 relative">
+                        {user.user_image ? (
+                          <img
+                            src={user.user_image}
+                            alt={user.name}
+                            className="w-full h-full rounded-full object-cover border-2 border-gray-200 cursor-pointer hover:border-purple-400 transition-colors"
+                            onClick={() => {
+                              setSelectedUser(user);
+                              if (fileInputRef.current) {
+                                fileInputRef.current.click();
+                              }
+                            }}
+                          />
+                        ) : (
+                          <div 
+                            className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-purple-100 transition-colors border-2 border-dashed border-gray-300 hover:border-purple-400"
+                            onClick={() => {
+                              setSelectedUser(user);
+                              if (fileInputRef.current) {
+                                fileInputRef.current.click();
+                              }
+                            }}
+                          >
+                            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* User Info */}
+                      <div className="text-center">
+                        <h3 className="font-semibold text-gray-900 mb-1">{user.name}</h3>
+                        {user.title && (
+                          <p className="text-sm text-gray-600 mb-2">{user.title}</p>
+                        )}
+                        <p className="text-xs text-gray-500 mb-3">{user.email}</p>
+
+                        {/* Actions */}
+                        <div className="flex justify-center space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedUser(user);
+                              if (fileInputRef.current) {
+                                fileInputRef.current.click();
+                              }
+                            }}
+                          >
+                            📷 {user.user_image ? 'Değiştir' : 'Ekle'}
+                          </Button>
+                          {user.user_image && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => downloadUserPhoto(user)}
+                            >
+                              ⬇️ İndir
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
-          ) : (
-            <div className="space-y-8">
-              {filteredDepartments.map((department) => (
-                <Card key={department.id}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      🏢 {department.name}
-                      <span className="ml-2 text-sm font-normal text-gray-500">
-                        ({department.users.length} kullanıcı)
-                      </span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                      {department.users.map((user) => (
-                        <div key={user.id} className="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
-                          {/* User Photo */}
-                          <div className="w-24 h-24 mx-auto mb-4 relative">
-                            {user.user_image ? (
-                              <img
-                                src={user.user_image}
-                                alt={user.name}
-                                className="w-full h-full rounded-full object-cover border-2 border-gray-200 cursor-pointer hover:border-purple-400 transition-colors"
-                                onClick={() => {
-                                  setSelectedUser(user);
-                                  if (fileInputRef.current) {
-                                    fileInputRef.current.click();
-                                  }
-                                }}
-                              />
-                            ) : (
-                              <div 
-                                className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-purple-100 transition-colors border-2 border-dashed border-gray-300 hover:border-purple-400"
-                                onClick={() => {
-                                  setSelectedUser(user);
-                                  if (fileInputRef.current) {
-                                    fileInputRef.current.click();
-                                  }
-                                }}
-                              >
-                                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* User Info */}
-                          <div className="text-center">
-                            <h3 className="font-semibold text-gray-900 mb-1">{user.name}</h3>
-                            {user.title && (
-                              <p className="text-sm text-gray-600 mb-2">{user.title}</p>
-                            )}
-                            <p className="text-xs text-gray-500 mb-3">{user.email}</p>
-
-                            {/* Actions */}
-                            <div className="flex justify-center space-x-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setSelectedUser(user);
-                                  if (fileInputRef.current) {
-                                    fileInputRef.current.click();
-                                  }
-                                }}
-                              >
-                                📷 {user.user_image ? 'Değiştir' : 'Ekle'}
-                              </Button>
-                              {user.user_image && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => downloadUserPhoto(user)}
-                                >
-                                  ⬇️ İndir
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+          ))}
         </div>
-      </main>
+      )}
 
       {/* Hidden file input */}
       <input
