@@ -311,7 +311,7 @@ export default function UserPhotos() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-8">
-                  {/* Parent Department Users */}
+                  {/* Department Users (Level 1 or Level 2) */}
                   {department.users.length > 0 && (
                     <div>
                       <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
@@ -391,7 +391,7 @@ export default function UserPhotos() {
                     </div>
                   )}
 
-                  {/* Subdepartments */}
+                  {/* Level 3 Department Sections */}
                   {department.subdepartments.map((subdept) => (
                     subdept.users.length > 0 && (
                       <div key={subdept.id}>

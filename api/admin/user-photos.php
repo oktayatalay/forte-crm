@@ -90,48 +90,58 @@ try {
             }
         }
         
-        // Now build the hierarchy - parent departments with their subdepartments
+        // Build 3-level hierarchy: Level 1 (hidden) -> Level 2 (cards) -> Level 3 (sections)
         $departments = [];
         
-        foreach ($departmentMap as $deptId => $dept) {
-            if (!$dept['parent_id']) {
-                // This is a parent department
-                $parentDept = $dept;
-                $parentDept['subdepartments'] = [];
-                
-                // Find all subdepartments
-                foreach ($departmentMap as $subDeptId => $subDept) {
-                    if ($subDept['parent_id'] == $deptId) {
-                        $parentDept['subdepartments'][] = $subDept;
-                    }
+        // Function to recursively build department hierarchy
+        function buildDepartmentHierarchy($departmentMap, $parentId = null) {
+            $children = [];
+            foreach ($departmentMap as $deptId => $dept) {
+                if ($dept['parent_id'] == $parentId) {
+                    $dept['subdepartments'] = buildDepartmentHierarchy($departmentMap, $deptId);
+                    $children[] = $dept;
                 }
+            }
+            return $children;
+        }
+        
+        // Get all Level 1 departments (root level)
+        $level1Departments = buildDepartmentHierarchy($departmentMap, null);
+        
+        // For user photos page, we want to show Level 1 and Level 2 as cards, Level 3 as sections
+        foreach ($level1Departments as $level1Dept) {
+            // First, add Level 1 department as a card if it has users
+            if (count($level1Dept['users']) > 0) {
+                $departments[] = [
+                    'id' => $level1Dept['id'],
+                    'name' => $level1Dept['name'],
+                    'parent_id' => $level1Dept['parent_id'],
+                    'parent_name' => $level1Dept['parent_name'],
+                    'users' => $level1Dept['users'],
+                    'subdepartments' => [] // Level 1 departments don't have subdepartments in card view
+                ];
+            }
+            
+            // Then, for each Level 1 department, get its Level 2 children as cards
+            foreach ($level1Dept['subdepartments'] as $level2Dept) {
+                // Level 2 becomes a card
+                $cardDepartment = [
+                    'id' => $level2Dept['id'],
+                    'name' => $level2Dept['name'],
+                    'parent_id' => $level2Dept['parent_id'],
+                    'parent_name' => $level2Dept['parent_name'],
+                    'users' => $level2Dept['users'],
+                    'subdepartments' => $level2Dept['subdepartments'] // Level 3 departments become sections
+                ];
                 
-                // Only include if there are users in parent or subdepartments
-                $totalUsers = count($parentDept['users']);
-                foreach ($parentDept['subdepartments'] as $subDept) {
-                    $totalUsers += count($subDept['users']);
+                // Only include if there are users in Level 2 or its Level 3 subdepartments
+                $totalUsers = count($cardDepartment['users']);
+                foreach ($cardDepartment['subdepartments'] as $level3Dept) {
+                    $totalUsers += count($level3Dept['users']);
                 }
                 
                 if ($totalUsers > 0) {
-                    $departments[] = $parentDept;
-                }
-            }
-        }
-        
-        // Also include standalone departments (those without parents and no children)
-        foreach ($departmentMap as $deptId => $dept) {
-            if (!$dept['parent_id'] && count($dept['users']) > 0) {
-                $hasChildren = false;
-                foreach ($departmentMap as $otherDept) {
-                    if ($otherDept['parent_id'] == $deptId) {
-                        $hasChildren = true;
-                        break;
-                    }
-                }
-                
-                if (!$hasChildren) {
-                    // This department is already added above, skip
-                    continue;
+                    $departments[] = $cardDepartment;
                 }
             }
         }

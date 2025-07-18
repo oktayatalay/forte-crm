@@ -274,10 +274,12 @@ export default function UserManagement() {
   const formatDepartmentDisplay = (user: User): string => {
     if (!user.department_name) return '';
     
+    // If user has a parent department, show "Level 2 / Level 3" format
     if (user.parent_department_name) {
       return `${user.parent_department_name} / ${user.department_name}`;
     }
     
+    // If user is directly in Level 1 or Level 2 department (no parent), show just the department name
     return user.department_name;
   };
 
