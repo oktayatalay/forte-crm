@@ -12,7 +12,10 @@ export default function AdminLayoutWrapper({
   const pathname = usePathname();
   
   // Don't use admin layout for login and forgot password pages
-  const isAuthPage = pathname === '/admin' || pathname === '/admin/forgot-password' || pathname === '/admin/reset-password';
+  const isAuthPage = pathname === '/admin' || pathname === '/admin/' || 
+                     pathname === '/admin/forgot-password' || pathname === '/admin/forgot-password/' ||
+                     pathname === '/admin/reset-password' || pathname === '/admin/reset-password/';
+  
   
   if (isAuthPage) {
     return <>{children}</>;
