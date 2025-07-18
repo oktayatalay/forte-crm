@@ -74,7 +74,7 @@ export default function ForgotPassword() {
                 <div className="text-center">
                   <Link 
                     href="/admin"
-                    className="text-blue-600 hover:text-blue-500 font-medium"
+                    className="text-gray-600 hover:text-gray-900 font-medium"
                   >
                     Giriş sayfasına dön
                   </Link>
@@ -92,8 +92,8 @@ export default function ForgotPassword() {
       <div className="max-w-md w-full space-y-8">
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
           <div className="text-center">
-            <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-              <Mail className="w-8 h-8 text-blue-600" />
+            <div className="mx-auto w-16 h-16 bg-gradient-to-br from-red-600 to-pink-600 rounded-2xl flex items-center justify-center mb-4">
+              <Mail className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
               Şifremi Unuttum
@@ -125,7 +125,7 @@ export default function ForgotPassword() {
 
             <Button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700"
               disabled={loading}
             >
               {loading ? 'Gönderiliyor...' : 'Şifre Sıfırlama Bağlantısı Gönder'}
@@ -134,7 +134,7 @@ export default function ForgotPassword() {
             <div className="text-center">
               <Link 
                 href="/admin"
-                className="inline-flex items-center text-sm text-blue-600 hover:text-blue-500"
+                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
               >
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 Giriş sayfasına dön

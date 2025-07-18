@@ -56,24 +56,24 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo and Branding */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-red-600 to-pink-600 rounded-2xl mb-4">
             <Shield className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Forte Admin</h1>
-          <p className="text-slate-400">Yönetici paneline erişim</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Forte Admin</h1>
+          <p className="text-gray-600">Yönetici paneline erişim</p>
         </div>
 
         {/* Login Card */}
-        <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
+        <Card className="border-gray-200 bg-white shadow-lg">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center text-white">
+            <CardTitle className="text-2xl text-center text-gray-900">
               Giriş Yap
             </CardTitle>
-            <CardDescription className="text-center text-slate-400">
+            <CardDescription className="text-center text-gray-600">
               Admin hesabınızla giriş yapın
             </CardDescription>
           </CardHeader>
@@ -81,7 +81,7 @@ export default function AdminLogin() {
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-200 flex items-center gap-2">
+                <Label htmlFor="email" className="text-gray-700 flex items-center gap-2">
                   <Mail className="w-4 h-4" />
                   E-posta Adresi
                 </Label>
@@ -91,13 +91,13 @@ export default function AdminLogin() {
                   placeholder="admin@forte.works"
                   value={credentials.email}
                   onChange={(e) => setCredentials(prev => ({ ...prev, email: e.target.value }))}
-                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-red-500 focus:ring-red-500"
+                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-red-500 focus:ring-red-500"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-200 flex items-center gap-2">
+                <Label htmlFor="password" className="text-gray-700 flex items-center gap-2">
                   <Lock className="w-4 h-4" />
                   Şifre
                 </Label>
@@ -107,7 +107,7 @@ export default function AdminLogin() {
                   placeholder="••••••••"
                   value={credentials.password}
                   onChange={(e) => setCredentials(prev => ({ ...prev, password: e.target.value }))}
-                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-red-500 focus:ring-red-500"
+                  className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-red-500 focus:ring-red-500"
                   required
                 />
               </div>
@@ -133,7 +133,7 @@ export default function AdminLogin() {
               <div className="text-center pt-4">
                 <Link
                   href="/admin/forgot-password"
-                  className="text-sm text-slate-400 hover:text-white transition-colors"
+                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   Şifremi unuttum
                 </Link>
@@ -144,7 +144,7 @@ export default function AdminLogin() {
 
         {/* Footer */}
         <div className="mt-8 text-center">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-gray-500">
             © 2024 Forte Tourism. Tüm hakları saklıdır.
           </p>
         </div>
