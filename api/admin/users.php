@@ -62,6 +62,8 @@ try {
                     d.name as department_name,
                     d.parent_id,
                     parent_dept.name as parent_department_name,
+                    parent_dept.parent_id as grandparent_id,
+                    grandparent_dept.name as grandparent_department_name,
                     u.gender,
                     u.birth_date,
                     u.city,
@@ -71,6 +73,7 @@ try {
                 FROM users u
                 LEFT JOIN departments d ON u.department_id = d.id
                 LEFT JOIN departments parent_dept ON d.parent_id = parent_dept.id
+                LEFT JOIN departments grandparent_dept ON parent_dept.parent_id = grandparent_dept.id
                 ORDER BY u.name ASC
             ");
             $stmt->execute();

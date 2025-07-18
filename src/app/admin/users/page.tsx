@@ -21,6 +21,8 @@ interface User {
   department_name: string | null;
   parent_id: number | null;
   parent_department_name: string | null;
+  grandparent_id: number | null;
+  grandparent_department_name: string | null;
   gender: string | null;
   birth_date: string | null;
   city: string | null;
@@ -274,13 +276,24 @@ export default function UserManagement() {
   const formatDepartmentDisplay = (user: User): string => {
     if (!user.department_name) return '';
     
-    // If user has a parent department, show "Level 2 / Level 3" format
-    if (user.parent_department_name) {
-      return `${user.parent_department_name} / ${user.department_name}`;
-    }
+    // Determine the level structure:
+    // Level 1 (root) → Level 2 → Level 3
+    // Only show hierarchy for Level 3 users (Level 2 / Level 3)
+    // For Level 1 and Level 2 users, show just their department name
     
-    // If user is directly in Level 1 or Level 2 department (no parent), show just the department name
-    return user.department_name;
+    if (user.grandparent_id) {
+      // User is in Level 3 department (has grandparent)
+      // Show: Level 2 / Level 3
+      return `${user.parent_department_name} / ${user.department_name}`;
+    } else if (user.parent_id) {
+      // User is in Level 2 department (has parent but no grandparent)
+      // Show: Level 2 only
+      return user.department_name;
+    } else {
+      // User is in Level 1 department (no parent)
+      // Show: Level 1 only
+      return user.department_name;
+    }
   };
 
   const downloadExcel = () => {
@@ -360,6 +373,7 @@ export default function UserManagement() {
       (user.title && user.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.department_name && user.department_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.parent_department_name && user.parent_department_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (user.grandparent_department_name && user.grandparent_department_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.city && user.city.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.mobile_phone_1 && user.mobile_phone_1.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.mobile_phone_2 && user.mobile_phone_2.toLowerCase().includes(searchTerm.toLowerCase()));
