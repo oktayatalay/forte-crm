@@ -227,19 +227,9 @@ export default function AdminManagement() {
       <header className="bg-white border-b border-gray-200">
         <div className="px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => window.location.href = '/admin/dashboard'}
-                className="text-gray-600 hover:text-gray-900"
-              >
-                ← Geri
-              </Button>
-              <div>
-                <h1 className="text-2xl font-semibold text-gray-900">Admin Yönetimi</h1>
-                <p className="text-sm text-gray-500 mt-1">Sistem adminlerini yönetin ve düzenleyin</p>
-              </div>
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">Admin Yönetimi</h1>
+              <p className="text-sm text-gray-500 mt-1">Sistem adminlerini yönetin ve düzenleyin</p>
             </div>
             <div className="flex items-center space-x-3">
               <Button 

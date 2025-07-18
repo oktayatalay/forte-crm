@@ -123,30 +123,66 @@ try {
         ];
     }
     
-    // Son aktiviteler (sample data - gerçek aktivite tablosu olsaydı)
-    $recentActivities = [
-        [
-            'id' => 1,
-            'activity_type' => 'user_login',
-            'user_email' => 'ahmet.kaya@forte.works',
-            'description' => 'Kullanıcı sisteme giriş yaptı',
-            'created_at' => date('Y-m-d H:i:s', strtotime('-2 minutes'))
-        ],
-        [
-            'id' => 2,
-            'activity_type' => 'profile_update',
-            'user_email' => 'mehmet.yilmaz@forte.works',
-            'description' => 'Profil bilgileri güncellendi',
-            'created_at' => date('Y-m-d H:i:s', strtotime('-5 minutes'))
-        ],
-        [
-            'id' => 3,
-            'activity_type' => 'signature_created',
-            'user_email' => 'ayse.demir@forte.works',
-            'description' => 'Mail imzası oluşturuldu',
-            'created_at' => date('Y-m-d H:i:s', strtotime('-12 minutes'))
-        ]
-    ];
+    // Son aktiviteler - gerçek verilerden
+    $stmt = $db->prepare("
+        SELECT 
+            'user_login' as activity_type,
+            u.email as user_email,
+            'Kullanıcı sisteme giriş yaptı' as description,
+            s.created_at
+        FROM sessions s
+        JOIN users u ON s.user_id = u.id
+        WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+        ORDER BY s.created_at DESC
+        LIMIT 10
+    ");
+    $stmt->execute();
+    $loginActivities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Son kullanıcı kayıtları
+    $stmt = $db->prepare("
+        SELECT 
+            'user_register' as activity_type,
+            email as user_email,
+            'Yeni kullanıcı kaydı yapıldı' as description,
+            created_at
+        FROM users
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        ORDER BY created_at DESC
+        LIMIT 5
+    ");
+    $stmt->execute();
+    $registerActivities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Son profil güncellemeleri
+    $stmt = $db->prepare("
+        SELECT 
+            'profile_update' as activity_type,
+            email as user_email,
+            'Profil bilgileri güncellendi' as description,
+            updated_at as created_at
+        FROM users
+        WHERE updated_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        AND updated_at != created_at
+        ORDER BY updated_at DESC
+        LIMIT 5
+    ");
+    $stmt->execute();
+    $updateActivities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Aktiviteleri birleştir ve sırala
+    $allActivities = array_merge($loginActivities, $registerActivities, $updateActivities);
+    
+    // Tarih sırasına göre sırala
+    usort($allActivities, function($a, $b) {
+        return strtotime($b['created_at']) - strtotime($a['created_at']);
+    });
+    
+    // ID ekle ve son 10'u al
+    $recentActivities = [];
+    for ($i = 0; $i < min(10, count($allActivities)); $i++) {
+        $recentActivities[] = array_merge(['id' => $i + 1], $allActivities[$i]);
+    }
     
     $stats = [
         'total_users' => (int)$totalUsers,

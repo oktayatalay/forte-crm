@@ -93,6 +93,8 @@ export default function AdminDashboard() {
 
       if (response.ok) {
         setAdmin(data.admin);
+        // Save admin data to localStorage for use in layout
+        localStorage.setItem('admin_user', JSON.stringify(data.admin));
       } else {
         localStorage.removeItem('admin_token');
         localStorage.removeItem('admin_user');

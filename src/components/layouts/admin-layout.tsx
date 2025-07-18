@@ -69,8 +69,22 @@ const navigationItems = [
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
+  const [adminData, setAdminData] = React.useState<{
+    id: number;
+    email: string;
+    full_name: string;
+    role: string;
+  } | null>(null);
   
   const isActive = (href: string) => pathname === href;
+
+  React.useEffect(() => {
+    // Get admin data from localStorage or API
+    const storedAdmin = localStorage.getItem('admin_user');
+    if (storedAdmin) {
+      setAdminData(JSON.parse(storedAdmin));
+    }
+  }, []);
 
   const handleLogout = () => {
     // Clear local storage
@@ -193,8 +207,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">Admin</p>
-                    <p className="text-xs leading-none text-muted-foreground">admin@forte.works</p>
+                    <p className="text-sm font-medium leading-none">
+                      {adminData?.full_name || 'Admin'}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {adminData?.email || 'admin@forte.works'}
+                    </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
