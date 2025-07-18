@@ -439,12 +439,12 @@ export default function DepartmentManagement() {
 
               <div>
                 <Label htmlFor="parent">Bağlı Olduğu Departman</Label>
-                <Select value={formData.parent_id?.toString() || ''} onValueChange={(value) => setFormData({ ...formData, parent_id: value ? parseInt(value) : null })}>
+                <Select value={formData.parent_id?.toString() || 'none'} onValueChange={(value) => setFormData({ ...formData, parent_id: value === 'none' ? null : parseInt(value) })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Ana departman seçin" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Ana Departman (Bağımsız)</SelectItem>
+                    <SelectItem value="none">Ana Departman (Bağımsız)</SelectItem>
                     {flattenDepartments(departments).map((dept) => (
                       <SelectItem key={dept.id} value={dept.id.toString()}>
                         {'  '.repeat(dept.level || 0)}{dept.name}
@@ -456,12 +456,12 @@ export default function DepartmentManagement() {
 
               <div>
                 <Label htmlFor="director">Direktör</Label>
-                <Select value={formData.director_id?.toString() || ''} onValueChange={(value) => setFormData({ ...formData, director_id: value ? parseInt(value) : null })}>
+                <Select value={formData.director_id?.toString() || 'none'} onValueChange={(value) => setFormData({ ...formData, director_id: value === 'none' ? null : parseInt(value) })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Direktör seçin" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Direktör seçilmedi</SelectItem>
+                    <SelectItem value="none">Direktör seçilmedi</SelectItem>
                     {users.map((user) => (
                       <SelectItem key={user.id} value={user.id.toString()}>
                         {user.name} - {user.title}
@@ -513,12 +513,12 @@ export default function DepartmentManagement() {
 
               <div>
                 <Label htmlFor="edit_parent">Bağlı Olduğu Departman</Label>
-                <Select value={formData.parent_id?.toString() || ''} onValueChange={(value) => setFormData({ ...formData, parent_id: value ? parseInt(value) : null })}>
+                <Select value={formData.parent_id?.toString() || 'none'} onValueChange={(value) => setFormData({ ...formData, parent_id: value === 'none' ? null : parseInt(value) })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Ana departman seçin" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Ana Departman (Bağımsız)</SelectItem>
+                    <SelectItem value="none">Ana Departman (Bağımsız)</SelectItem>
                     {flattenDepartments(departments).filter(dept => dept.id !== editingDepartment?.id).map((dept) => (
                       <SelectItem key={dept.id} value={dept.id.toString()}>
                         {'  '.repeat(dept.level || 0)}{dept.name}
@@ -530,12 +530,12 @@ export default function DepartmentManagement() {
 
               <div>
                 <Label htmlFor="edit_director">Direktör</Label>
-                <Select value={formData.director_id?.toString() || ''} onValueChange={(value) => setFormData({ ...formData, director_id: value ? parseInt(value) : null })}>
+                <Select value={formData.director_id?.toString() || 'none'} onValueChange={(value) => setFormData({ ...formData, director_id: value === 'none' ? null : parseInt(value) })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Direktör seçin" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Direktör seçilmedi</SelectItem>
+                    <SelectItem value="none">Direktör seçilmedi</SelectItem>
                     {users.map((user) => (
                       <SelectItem key={user.id} value={user.id.toString()}>
                         {user.name} - {user.title}

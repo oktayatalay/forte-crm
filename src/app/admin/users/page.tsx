@@ -19,6 +19,8 @@ interface User {
   offices: string[] | null;
   department_id: number | null;
   department_name: string | null;
+  parent_id: number | null;
+  parent_department_name: string | null;
   gender: string | null;
   birth_date: string | null;
   city: string | null;
@@ -269,6 +271,16 @@ export default function UserManagement() {
     }
   };
 
+  const formatDepartmentDisplay = (user: User): string => {
+    if (!user.department_name) return '';
+    
+    if (user.parent_department_name) {
+      return `${user.parent_department_name} / ${user.department_name}`;
+    }
+    
+    return user.department_name;
+  };
+
   const downloadExcel = () => {
     const headers = ['Adı Soyadı', 'E-posta', 'Şirket Telefonu', 'Şahsi Telefonu', 'Ofis', 'Departman', 'Title', 'Yaşadığı Şehir', 'Adres', 'Cinsiyet', 'Doğum Tarihi'];
     const excelData = sortedUsers.map(user => [
@@ -277,7 +289,7 @@ export default function UserManagement() {
       user.mobile_phone_1 || '',
       user.mobile_phone_2 || '',
       user.offices ? user.offices.join('; ') : '',
-      user.department_name || '',
+      formatDepartmentDisplay(user),
       user.title || '',
       user.city || '',
       user.address || '',
@@ -345,6 +357,7 @@ export default function UserManagement() {
       (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.title && user.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.department_name && user.department_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (user.parent_department_name && user.parent_department_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.city && user.city.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.mobile_phone_1 && user.mobile_phone_1.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.mobile_phone_2 && user.mobile_phone_2.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -981,9 +994,9 @@ export default function UserManagement() {
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      {user.department_name ? (
+                      {formatDepartmentDisplay(user) ? (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {user.department_name}
+                          {formatDepartmentDisplay(user)}
                         </span>
                       ) : (
                         <span className="text-gray-500">-</span>

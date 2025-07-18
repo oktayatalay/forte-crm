@@ -60,6 +60,8 @@ try {
                     u.offices, 
                     u.department_id,
                     d.name as department_name,
+                    d.parent_id,
+                    parent_dept.name as parent_department_name,
                     u.gender,
                     u.birth_date,
                     u.city,
@@ -68,6 +70,7 @@ try {
                     u.created_at
                 FROM users u
                 LEFT JOIN departments d ON u.department_id = d.id
+                LEFT JOIN departments parent_dept ON d.parent_id = parent_dept.id
                 ORDER BY u.name ASC
             ");
             $stmt->execute();
