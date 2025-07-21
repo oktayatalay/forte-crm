@@ -12,6 +12,9 @@ class Database {
         $this->db_name = $_ENV['DB_NAME'] ?? '';
         $this->username = $_ENV['DB_USER'] ?? '';
         $this->password = $_ENV['DB_PASS'] ?? '';
+        
+        // Debug: log env variables (remove in production)
+        error_log("DB Config - Host: " . $this->host . ", DB: " . $this->db_name . ", User: " . $this->username);
     }
     private $conn;
 
@@ -27,7 +30,7 @@ class Database {
             $this->conn->exec("set names utf8");
         } catch(PDOException $exception) {
             error_log("Database connection error: " . $exception->getMessage());
-            throw new Exception("Database connection failed");
+            throw new Exception("Database connection failed: " . $exception->getMessage());
         }
         
         return $this->conn;
