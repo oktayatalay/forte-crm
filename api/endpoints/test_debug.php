@@ -15,8 +15,14 @@ try {
         'php_version' => PHP_VERSION,
         'server_info' => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
         'current_dir' => __DIR__,
-        'parent_dir' => dirname(__DIR__)
+        'parent_dir' => dirname(__DIR__),
+        'request_method' => $_SERVER['REQUEST_METHOD'] ?? 'Unknown'
     ];
+    
+    // Test headers
+    $headers = getallheaders();
+    $response['headers'] = array_keys($headers);
+    $response['auth_header'] = $headers['Authorization'] ?? 'NOT_PROVIDED';
     
     // Test 2: File exists
     $config_path = '../config/database.php';

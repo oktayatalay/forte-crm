@@ -33,13 +33,25 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $headers = getallheaders();
 $session_token = $headers['Authorization'] ?? '';
 
+// Debug: log authorization header
+error_log("Authorization header: " . $session_token);
+
 if (strpos($session_token, 'Bearer ') === 0) {
     $session_token = substr($session_token, 7);
 }
 
+// Debug: log processed token
+error_log("Processed token: " . substr($session_token, 0, 20) . "...");
+
 if (empty($session_token)) {
     http_response_code(401);
-    echo json_encode(['error' => 'Session token gerekli']);
+    echo json_encode([
+        'error' => 'Session token gerekli',
+        'debug' => [
+            'headers' => array_keys($headers),
+            'auth_header' => $headers['Authorization'] ?? 'MISSING'
+        ]
+    ]);
     exit;
 }
 
