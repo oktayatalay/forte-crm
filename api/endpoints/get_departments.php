@@ -12,15 +12,21 @@ try {
     $database = new Database();
     $db = $database->getConnection();
     
-    // Get all active departments
+    // Get all active departments with hierarchy information
     $stmt = $db->prepare("
         SELECT 
-            id,
-            name,
-            description
-        FROM departments 
-        WHERE id IS NOT NULL
-        ORDER BY name ASC
+            d.id,
+            d.name,
+            d.description,
+            d.parent_id,
+            parent_dept.name as parent_name,
+            parent_dept.parent_id as grandparent_id,
+            grandparent_dept.name as grandparent_name
+        FROM departments d
+        LEFT JOIN departments parent_dept ON d.parent_id = parent_dept.id
+        LEFT JOIN departments grandparent_dept ON parent_dept.parent_id = grandparent_dept.id
+        WHERE d.id IS NOT NULL
+        ORDER BY d.parent_id IS NULL DESC, parent_dept.name ASC, d.name ASC
     ");
     
     $stmt->execute();

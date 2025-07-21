@@ -34,6 +34,10 @@ interface User {
 interface Department {
   id: number;
   name: string;
+  parent_id: number | null;
+  parent_name: string | null;
+  grandparent_id: number | null;
+  grandparent_name: string | null;
 }
 
 interface Office {
@@ -296,6 +300,20 @@ export default function UserManagement() {
     }
   };
 
+  const formatDepartmentSelectDisplay = (department: Department): string => {
+    // Format department for selectbox display with hierarchy
+    if (department.grandparent_id) {
+      // Level 3 department
+      return `${department.parent_name} / ${department.name}`;
+    } else if (department.parent_id) {
+      // Level 2 department  
+      return `${department.parent_name} / ${department.name}`;
+    } else {
+      // Level 1 department
+      return department.name;
+    }
+  };
+
   const downloadExcel = () => {
     const headers = ['Adı Soyadı', 'E-posta', 'Şirket Telefonu', 'Şahsi Telefonu', 'Ofis', 'Departman', 'Title', 'Yaşadığı Şehir', 'Adres', 'Cinsiyet', 'Doğum Tarihi'];
     const excelData = sortedUsers.map(user => [
@@ -544,7 +562,7 @@ export default function UserManagement() {
                     <option value="">Tüm Departmanlar</option>
                     {departments.map((dept) => (
                       <option key={dept.id} value={dept.id.toString()}>
-                        {dept.name}
+                        {formatDepartmentSelectDisplay(dept)}
                       </option>
                     ))}
                   </select>
@@ -675,7 +693,7 @@ export default function UserManagement() {
                       <option value="">Departman Seçiniz</option>
                       {departments.map((dept) => (
                         <option key={dept.id} value={dept.id}>
-                          {dept.name}
+                          {formatDepartmentSelectDisplay(dept)}
                         </option>
                       ))}
                     </select>
@@ -829,7 +847,7 @@ export default function UserManagement() {
                       <option value="">Departman Seçiniz</option>
                       {departments.map((dept) => (
                         <option key={dept.id} value={dept.id}>
-                          {dept.name}
+                          {formatDepartmentSelectDisplay(dept)}
                         </option>
                       ))}
                     </select>

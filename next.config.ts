@@ -3,24 +3,13 @@ import type { NextConfig } from "next";
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 const nextConfig: NextConfig = {
-  // Remove static export to enable API rewrites
+  output: 'export', // cPanel hosting için static export geri getir
   trailingSlash: true,
   images: {
     unoptimized: true
   },
   basePath: '',
   assetPrefix: '',
-  // API rewrites for PHP backend
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: isDevelopment 
-          ? 'https://corporate.forte.works/api/:path*'
-          : '/api/:path*', // Production'da aynı domain üzerinde
-      },
-    ]
-  },
   // Development optimizations
   experimental: {
     optimizePackageImports: ['lucide-react', 'apexcharts', 'react-apexcharts']

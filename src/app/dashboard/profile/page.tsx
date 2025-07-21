@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { User, Mail, Phone, MapPin, Building, Calendar, Settings, Save, RotateCcw } from 'lucide-react';
 import UserPhotoUpload from '@/components/ui/user-photo-upload';
+import { getApiUrl } from '@/lib/config';
 
 interface User {
   id: number;
@@ -58,6 +59,10 @@ export default function ProfilePage() {
     id: number;
     name: string;
     description: string;
+    parent_id: number | null;
+    parent_name: string | null;
+    grandparent_id: number | null;
+    grandparent_name: string | null;
   }>>([]);
 
   useEffect(() => {
@@ -70,7 +75,7 @@ export default function ProfilePage() {
       }
 
       try {
-        const response = await fetch('/api/endpoints/verify_session.php', {
+        const response = await fetch(getApiUrl('/api/endpoints/verify_session.php'), {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -107,7 +112,7 @@ export default function ProfilePage() {
     // Ofisleri yükle
     const loadOffices = async () => {
       try {
-        const response = await fetch('/api/endpoints/get_offices.php');
+        const response = await fetch(getApiUrl('/api/endpoints/get_offices.php'));
         const data = await response.json();
         
         if (response.ok && data.success) {
@@ -121,7 +126,7 @@ export default function ProfilePage() {
     // Departmanları yükle
     const loadDepartments = async () => {
       try {
-        const response = await fetch('/api/endpoints/get_departments.php');
+        const response = await fetch(getApiUrl('/api/endpoints/get_departments.php'));
         const data = await response.json();
         
         if (response.ok && data.success) {
@@ -136,6 +141,28 @@ export default function ProfilePage() {
     loadOffices();
     loadDepartments();
   }, []);
+
+  const formatDepartmentSelectDisplay = (department: {
+    id: number;
+    name: string;
+    description: string;
+    parent_id: number | null;
+    parent_name: string | null;
+    grandparent_id: number | null;
+    grandparent_name: string | null;
+  }): string => {
+    // Format department for selectbox display with hierarchy
+    if (department.grandparent_id) {
+      // Level 3 department
+      return `${department.parent_name} / ${department.name}`;
+    } else if (department.parent_id) {
+      // Level 2 department  
+      return `${department.parent_name} / ${department.name}`;
+    } else {
+      // Level 1 department
+      return department.name;
+    }
+  };
 
   const handleInputChange = (field: string, value: string | number | null) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -155,7 +182,7 @@ export default function ProfilePage() {
     const token = localStorage.getItem('session_token');
 
     try {
-      const response = await fetch('/api/endpoints/update_profile.php', {
+      const response = await fetch(getApiUrl('/api/endpoints/update_profile.php'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -247,7 +274,7 @@ export default function ProfilePage() {
               onImageUpdate={async (imageData) => {
                 try {
                   const token = localStorage.getItem('session_token');
-                  const response = await fetch('/api/endpoints/update_user_photo.php', {
+                  const response = await fetch(getApiUrl('/api/endpoints/update_user_photo.php'), {
                     method: 'POST',
                     headers: {
                       'Authorization': `Bearer ${token}`,
@@ -348,7 +375,7 @@ export default function ProfilePage() {
                     <SelectItem value="none">Departman seçiniz</SelectItem>
                     {departments.map(dept => (
                       <SelectItem key={dept.id} value={dept.id.toString()}>
-                        {dept.name}
+                        {formatDepartmentSelectDisplay(dept)}
                       </SelectItem>
                     ))}
                   </SelectContent>
