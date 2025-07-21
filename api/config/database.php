@@ -13,8 +13,6 @@ class Database {
         $this->username = $_ENV['DB_USER'] ?? '';
         $this->password = $_ENV['DB_PASS'] ?? '';
         
-        // Debug: log env variables (remove in production)
-        error_log("DB Config - Host: " . $this->host . ", DB: " . $this->db_name . ", User: " . $this->username);
     }
     private $conn;
 

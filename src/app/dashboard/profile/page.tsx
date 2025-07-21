@@ -13,6 +13,9 @@ import { toast } from 'sonner';
 import { User, Mail, Phone, MapPin, Building, Calendar, Settings, Save, RotateCcw } from 'lucide-react';
 import UserPhotoUpload from '@/components/ui/user-photo-upload';
 import { getApiUrl } from '@/lib/config';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
+import '@/styles/phone-input.css';
 
 interface User {
   id: number;
@@ -413,23 +416,27 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="mobile1">Cep Telefonu 1</Label>
-                  <Input
-                    id="mobile1"
-                    type="tel"
+                  <PhoneInput
+                    international
+                    countryCallingCodeEditable={false}
+                    defaultCountry="TR"
                     value={formData.mobile_phone_1}
-                    onChange={(e) => handleInputChange('mobile_phone_1', e.target.value)}
-                    placeholder="Örn: +90 555 123 45 67"
+                    onChange={(value) => handleInputChange('mobile_phone_1', value || '')}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder="555 123 45 67"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="mobile2">Cep Telefonu 2 (Opsiyonel)</Label>
-                  <Input
-                    id="mobile2"
-                    type="tel"
+                  <PhoneInput
+                    international
+                    countryCallingCodeEditable={false}
+                    defaultCountry="TR"
                     value={formData.mobile_phone_2}
-                    onChange={(e) => handleInputChange('mobile_phone_2', e.target.value)}
-                    placeholder="Örn: +90 555 987 65 43"
+                    onChange={(value) => handleInputChange('mobile_phone_2', value || '')}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder="555 987 65 43"
                   />
                 </div>
               </div>

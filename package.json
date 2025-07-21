@@ -47,6 +47,7 @@
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.8",
     "react-image-crop": "^11.0.10",
+    "react-phone-number-input": "^3.4.12",
     "sonner": "^2.0.5",
     "swiper": "^11.2.10",
     "tailwind-merge": "^3.3.1",

@@ -1,8 +1,5 @@
 <?php
-// Enable error reporting for debugging
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// Production ready
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -33,25 +30,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $headers = getallheaders();
 $session_token = $headers['Authorization'] ?? '';
 
-// Debug: log authorization header
-error_log("Authorization header: " . $session_token);
-
 if (strpos($session_token, 'Bearer ') === 0) {
     $session_token = substr($session_token, 7);
 }
 
-// Debug: log processed token
-error_log("Processed token: " . substr($session_token, 0, 20) . "...");
-
 if (empty($session_token)) {
     http_response_code(401);
-    echo json_encode([
-        'error' => 'Session token gerekli',
-        'debug' => [
-            'headers' => array_keys($headers),
-            'auth_header' => $headers['Authorization'] ?? 'MISSING'
-        ]
-    ]);
+    echo json_encode(['error' => 'Session token gerekli']);
     exit;
 }
 
@@ -88,9 +73,6 @@ try {
     $database = new Database();
     $db = $database->getConnection();
     
-    // Debug logging
-    error_log("Received offices: " . json_encode($offices));
-
     // Offices validation - veritabanından geçerli ofisleri al
     $valid_offices = [];
     $offices_stmt = $db->prepare("SELECT code FROM offices WHERE is_active = TRUE");
@@ -103,9 +85,6 @@ try {
         return in_array($office, $valid_offices);
     });
     $offices_json = !empty($offices) ? json_encode(array_values($offices)) : null;
-
-    error_log("Filtered offices: " . json_encode($offices));
-    error_log("Final offices JSON: " . $offices_json);
     
     // Session'ı doğrula ve user_id al
     $session_stmt = $db->prepare("
