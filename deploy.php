@@ -31,9 +31,16 @@ try {
     // $output = shell_exec('cd ' . __DIR__ . ' && composer install --no-dev 2>&1');
     // writeLog('Composer output: ' . $output);
     
-    // NPM install ve build (eğer gerekirse)
-    // $output = shell_exec('cd ' . __DIR__ . ' && npm ci && npm run build 2>&1');
-    // writeLog('NPM output: ' . $output);
+    // NPM install ve build
+    $output = shell_exec('cd ' . __DIR__ . ' && npm ci 2>&1');
+    writeLog('NPM install output: ' . $output);
+    
+    $output = shell_exec('cd ' . __DIR__ . ' && npm run build 2>&1');
+    writeLog('NPM build output: ' . $output);
+    
+    // Start/restart Next.js production server
+    $output = shell_exec('cd ' . __DIR__ . ' && pkill -f "next start" && npm run start > next.log 2>&1 &');
+    writeLog('Next.js restart output: ' . $output);
     
     // Cache temizleme
     if (function_exists('opcache_reset')) {
