@@ -84,28 +84,28 @@ if ($department_id && !is_numeric($department_id)) {
     $department_id = null;
 }
 
-// Debug logging
-error_log("Received offices: " . json_encode($offices));
-
-// Offices validation - veritabanından geçerli ofisleri al
-$valid_offices = [];
-$offices_stmt = $db->prepare("SELECT code FROM offices WHERE is_active = TRUE");
-$offices_stmt->execute();
-while ($office_row = $offices_stmt->fetch(PDO::FETCH_ASSOC)) {
-    $valid_offices[] = $office_row['code'];
-}
-
-$offices = array_filter($offices, function($office) use ($valid_offices) {
-    return in_array($office, $valid_offices);
-});
-$offices_json = !empty($offices) ? json_encode(array_values($offices)) : null;
-
-error_log("Filtered offices: " . json_encode($offices));
-error_log("Final offices JSON: " . $offices_json);
-
 try {
     $database = new Database();
     $db = $database->getConnection();
+    
+    // Debug logging
+    error_log("Received offices: " . json_encode($offices));
+
+    // Offices validation - veritabanından geçerli ofisleri al
+    $valid_offices = [];
+    $offices_stmt = $db->prepare("SELECT code FROM offices WHERE is_active = TRUE");
+    $offices_stmt->execute();
+    while ($office_row = $offices_stmt->fetch(PDO::FETCH_ASSOC)) {
+        $valid_offices[] = $office_row['code'];
+    }
+
+    $offices = array_filter($offices, function($office) use ($valid_offices) {
+        return in_array($office, $valid_offices);
+    });
+    $offices_json = !empty($offices) ? json_encode(array_values($offices)) : null;
+
+    error_log("Filtered offices: " . json_encode($offices));
+    error_log("Final offices JSON: " . $offices_json);
     
     // Session'ı doğrula ve user_id al
     $session_stmt = $db->prepare("
