@@ -30,10 +30,12 @@ private $password = "";               // DB şifre
 #### B) Email yapılandırması:
 `api/config/email.php` dosyasını düzenle:
 ```php
-define('SMTP_HOST', 'mail.forte.works');
-define('SMTP_USERNAME', 'corporate@forte.works');
-define('SMTP_PASSWORD', 'ForteTourism2025');
+define('SMTP_HOST', 'your_smtp_host');
+define('SMTP_USERNAME', 'your_smtp_username');
+define('SMTP_PASSWORD', 'your_secure_password');
 ```
+
+**ÖNEMLİ:** Gerçek SMTP bilgilerinizi .env dosyasında saklayın!
 
 ### 3. Database Tablolarını Oluştur
 
